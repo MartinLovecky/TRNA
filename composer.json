@@ -1,0 +1,37 @@
+{
+    "name": "yuha/trna",
+    "description": "Async TMNF server controller",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Yuha\\Trna\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Yuha TM",
+            "email": "yuha@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "revolt/event-loop": "^1.0",
+        "envms/fluentpdo": "^2.2",
+        "monolog/monolog": "^3.9",
+        "symfony/var-dumper": "^8.0",
+        "league/container": "^5.1",
+        "vlucas/phpdotenv": "^5.6",
+        "twig/twig": "^3.22",
+        "google/apiclient": "^2.18"
+    },
+    "scripts": {
+        "pre-autoload-dump": "Google\\Task\\Composer::cleanup",
+        "fix": "php php-cs-fixer-v3.phar fix --config=.php-cs-fixer.php"
+    },
+    "extra": {
+        "google/apiclient-services": [
+            "YouTube"
+        ]
+    }
+}

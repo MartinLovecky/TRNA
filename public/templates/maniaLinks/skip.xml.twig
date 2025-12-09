@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manialink id="123">
+    <frame>
+        <!-- Background -->
+        <quad posn="-40 30 -32" sizen="40 20" style="Bgs1" substyle="BgList" />
+
+        <!-- Header -->
+        <label posn="-38 27 -31" sizen="36 4" halign="center" valign="center"
+               textsize="3" style="TextCardInfo"
+               text="{{ header|default('Vote: Skip Track?')}}" />
+       <!-- Countdown -->
+       <label id="Timer" posn="-38 25 -31" sizen="36 4"
+            halign="center" valign="center" textsize="3"
+            style="TextCardInfo" text="{{ remaining }}" />
+        <!-- Yes / No Buttons -->
+        <quad posn="-40 10 -32" sizen="19 3" bgcolor="0F8" />
+        <quad posn="-19 10 -32" sizen="19 3" bgcolor="F00" />
+
+        <label posn="-36 8 -31" sizen="14 2" valign="center" halign="center"
+               style="TextButtonNav" text="YES (x{{yes}})"
+               action="{{ actions.yes }}" />
+
+        <label posn="-14 8 -31" sizen="14 2" valign="center" halign="center"
+               style="TextButtonNav" text="NO (x{{no}})"
+               action="{{ actions.no }}" />
+
+        {% if isAdmin %}
+        <!-- Admin-only options -->
+        <quad posn="-40 5 -32" sizen="19 3" bgcolor="08F" />
+        <quad posn="-19 5 -32" sizen="19 3" bgcolor="888" />
+
+        <label posn="-36 3 -31" sizen="14 2" valign="center" halign="center"
+               style="TextButtonNav" text="PASS"
+               action="{{ actions.pass }}" />
+
+        <label posn="-14 3 -31" sizen="14 2" valign="center" halign="center"
+               style="TextButtonNav" text="CANCEL"
+               action="{{ actions.cancel }}" />
+        {% endif %}
+
+        <!-- Close Button -->
+        <label posn="-2 0 -31" sizen="8 3" valign="center" halign="center"
+               style="TextButtonNav" text="CLOSE"
+               action="{{ actions.close|default(0) }}" />
+    </frame>
+</manialink>
