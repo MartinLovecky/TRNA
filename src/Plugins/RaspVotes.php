@@ -6,10 +6,8 @@ namespace Yuha\Trna\Plugins;
 
 use Revolt\EventLoop;
 use Yuha\Trna\Core\Contracts\DependentPlugin;
-use Yuha\Trna\Core\Controllers\PluginController;
-use Yuha\Trna\Core\Controllers\VoteController;
-use Yuha\Trna\Core\Enums\Panel;
-use Yuha\Trna\Core\Enums\Votes;
+use Yuha\Trna\Core\Controllers\{PluginController, VoteController};
+use Yuha\Trna\Core\Enums\{Panel, Votes};
 use Yuha\Trna\Core\TmContainer;
 
 class RaspVotes implements DependentPlugin

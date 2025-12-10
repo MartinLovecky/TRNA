@@ -44,7 +44,7 @@ enum Panel: int
                 'pass'  => 5,
                 'none'  => 6, //wait
             ],
-            default => ['close' => 0]
+            default => ['none' => 6]
         };
     }
 

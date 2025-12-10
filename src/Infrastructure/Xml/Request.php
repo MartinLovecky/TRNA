@@ -51,37 +51,46 @@ class Request
      */
     public function createMultiCallRequest(array $calls): string
     {
-        $this->dom = new DOMDocument();
+        $this->dom = new \DOMDocument();
         $this->dom->encoding = 'UTF-8';
         $this->dom->formatOutput = true;
         $this->dom->xmlVersion = '1.0';
         $this->dom->preserveWhiteSpace = false;
+
+        // Root <methodCall>
         $methodCall = $this->dom->createElement('methodCall');
         $this->dom->appendChild($methodCall);
+
+        // <methodName>system.multicall</methodName>
         $methodName = $this->dom->createElement('methodName', 'system.multicall');
         $methodCall->appendChild($methodName);
+
+        // <params>
         $params = $this->dom->createElement('params');
         $methodCall->appendChild($params);
 
+        // Single <param> containing the multicall array
         $param = $this->dom->createElement('param');
         $valueElement = $this->dom->createElement('value');
         $arrayElement = $this->dom->createElement('array');
         $dataElement = $this->dom->createElement('data');
 
         foreach ($calls as $call) {
+            // Each call is a <struct>
             $callStruct = $this->dom->createElement('struct');
 
+            // --- methodName member ---
             $memberMethod = $this->dom->createElement('member');
             $nameMethod = $this->dom->createElement('name', 'methodName');
-
             $valueMethod = $this->dom->createElement('value');
             $valueMethod->appendChild($this->dom->createTextNode($call['methodName']));
+            $memberMethod->appendChild($nameMethod);
             $memberMethod->appendChild($valueMethod);
-            $callStruct->appendChild($nameMethod);
+            $callStruct->appendChild($memberMethod);
 
+            // --- params member ---
             $memberParams = $this->dom->createElement('member');
-            $memberParams->appendChild($this->dom->createElement('name', 'params'));
-
+            $nameParams = $this->dom->createElement('name', 'params');
             $paramsValue = $this->dom->createElement('value');
             $paramsArray = $this->dom->createElement('array');
             $paramsData = $this->dom->createElement('data');
@@ -94,8 +103,11 @@ class Request
 
             $paramsArray->appendChild($paramsData);
             $paramsValue->appendChild($paramsArray);
+            $memberParams->appendChild($nameParams);
             $memberParams->appendChild($paramsValue);
             $callStruct->appendChild($memberParams);
+
+            // Wrap struct in <value> and add to <data>
             $valueItem = $this->dom->createElement('value');
             $valueItem->appendChild($callStruct);
             $dataElement->appendChild($valueItem);

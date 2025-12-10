@@ -5,19 +5,25 @@ declare(strict_types=1);
 namespace Yuha\Trna\Plugins;
 
 use Yuha\Trna\Core\Contracts\DependentPlugin;
-use Yuha\Trna\Core\Controllers\PluginController;
+use Yuha\Trna\Core\Controllers\{PluginController, VoteController};
+use Yuha\Trna\Core\Enums\{ActionResult, Panel};
 use Yuha\Trna\Core\TmContainer;
+use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Core\Window\WindowRegistry;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 
 class ManiaLinks implements DependentPlugin
 {
+    use LoggerAware;
     private const string PATH = 'maniaLinks' . \DIRECTORY_SEPARATOR;
     private const int OUT = 0;
     private PluginController $pluginController;
 
-    public function __construct(private Client $client)
-    {
+    public function __construct(
+        private Client $client,
+        private VoteController $voteController
+    ) {
+        $this->initLog('Plugin-ManiaLinks');
     }
 
     public function setRegistry(PluginController $pluginController): void
@@ -34,7 +40,7 @@ class ManiaLinks implements DependentPlugin
             return $th->getMessage();
         }
 
-        $res = $this->handleAction();
+        $res = $this->handleAction($player, $panel);
     }
 
     public function displayToAll(string $winName, array $context, bool $hide = false): void
@@ -57,7 +63,32 @@ class ManiaLinks implements DependentPlugin
         $this->client->sendXmlToLogin($login, "<manialink id='{$id}'></manialink>");
     }
 
-    private function handleAction()
+    private function handleAction(TmContainer $player, Panel $panel)
     {
+        $choice = $panel->choiceName($player->get("{$panel->name}.currentPage"));
+        $result = match ($panel) {
+            Panel::Skip, Panel::Replay => $this->action($player, $choice),
+            default => ActionResult::NoAction,
+        };
+
+        match ($result) {
+            ActionResult::Closed     => $this->closeDisplayToLogin($player->get('Login'), $panel->value),
+            ActionResult::NotHandled => $this->logWarning("Manialink {$panel->name} action: {$choice} not handled: private function action(TmContainer \$player, string \$choice = 'none')"),
+            default => null,
+        };
+    }
+
+    private function action(TmContainer $player, string $choice = 'none'): ActionResult
+    {
+        if ($choice === 'yes' || $choice === 'no') {
+            $this->voteController->update($player, $choice);
+            return ActionResult::Handled;
+        } elseif (($choice === 'cancel' || $choice === 'pass') && $player->get('isAdmin')) {
+            return ActionResult::NotHandled; //TODO
+        } elseif ($choice === 'close') {
+            return ActionResult::Closed;
+        }
+
+        return ActionResult::NoAction;
     }
 }
