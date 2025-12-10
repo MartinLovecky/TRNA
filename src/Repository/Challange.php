@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Repository;
 
+use Yuha\Trna\Core\Controllers\RepoController;
 use Yuha\Trna\Core\{Server, TmContainer};
 use Yuha\Trna\Infrastructure\Gbx\{Client, GbxFetcher};
 use Yuha\Trna\Infrastructure\Tmx\TmxFetcher;
@@ -14,6 +15,7 @@ class Challange
     public function __construct(
         private Client $client,
         private GbxFetcher $gbxFetcher,
+        private RepoController $repoController,
         private TmxFetcher $tmxFetcher
     ) {
         $this->gbxFetcher->setXml(true);

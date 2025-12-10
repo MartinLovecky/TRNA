@@ -43,7 +43,7 @@ class PluginController
      * @template T of PluginInterface
      * @param class-string<T> $pluginClass
      */
-    public function invokePluginMethod(string $pluginClass, string $methodName, ...$args): mixed
+    public function invokeMethod(string $pluginClass, string $methodName, ...$args): mixed
     {
         $plugin = $this->getPlugin($pluginClass);
         if ($plugin && method_exists($plugin, $methodName)) {

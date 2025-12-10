@@ -67,7 +67,7 @@ class VoteController
         $rem = (int) ceil(max(0, self::DURATION - (microtime(true) - $this->vote['startedAt'])));
         $this->vote['remaining'] = $rem;
 
-        return ['actions' => $actions, 'remaining' => $rem];
+        return ['active' => true];
     }
 
     public function update(TmContainer $player, string $choice): array
@@ -121,6 +121,17 @@ class VoteController
             'param'     => $this->vote['param'],
             'arg'       => $this->vote['arg'],
         ];
+    }
+
+    public function tick(): int
+    {
+        if (!isset($this->vote)) {
+            return 0;
+        }
+
+        $this->vote['remaining']--;
+
+        return $this->vote['remaining'];
     }
 
     private function countVotes(): array

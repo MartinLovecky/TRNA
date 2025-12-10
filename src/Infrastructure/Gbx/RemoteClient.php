@@ -32,9 +32,9 @@ final class RemoteClient
         string $method,
         array $params = [],
         bool $multi = false
-    ): Deferred {
+    ): TmContainer {
         if ($multi) {
-            return self::$client->multicall($params);
+            //return self::$client->multicall($params);
         }
 
         return self::$client->query($method, $params);

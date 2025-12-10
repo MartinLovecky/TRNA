@@ -140,8 +140,8 @@ class Response
 
         $x = ['methodName' => $this->methodName];
         //NOTE (yuha) We could use idea of CallbackHelper here as well, but it would be a lot of work
-        // to map all the responses, so for now we just use numeric indexes
-        foreach ($paramElements as $index => $param) {
+        // to map all the responses, so for now we just wrap value into result
+        foreach ($paramElements as $_ => $param) {
             $valueElement = $this->getFirstDirectChild($param, 'value');
             $proccessedValue = RpcConverter::deserialize($valueElement);
 
@@ -161,13 +161,13 @@ class Response
     {
         $paramElements = $this->getDirectChildren($params, 'param');
         $x = [];
-        foreach ($paramElements as $index => $param) {
+        foreach ($paramElements as $_ => $param) {
             $valueElement = $this->getFirstDirectChild($param, 'value');
-            $x[(string)$index] = RpcConverter::deserialize($valueElement);
+            $x['result'] = RpcConverter::deserialize($valueElement);
         }
         $x['methodName'] = $this->methodName;
-        $result = ['results' => Arr::flatten($x)];
-        return TmContainer::fromArray($result);
+
+        return TmContainer::fromArray(Arr::flatten($x));
     }
 
     /**

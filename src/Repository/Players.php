@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Yuha\Trna\Repository;
 
 use Yuha\Trna\Core\Controllers\RepoController;
-use Yuha\Trna\Core\Server;
-use Yuha\Trna\Core\TmContainer;
+use Yuha\Trna\Core\{Server, TmContainer};
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Service\Aseco;
 

@@ -35,7 +35,7 @@ class BaseFetcher
      *
      * @var array<mixed>
      */
-    private array $lookbacks = [];
+    private ?array $lookbacks = [];
     private string $gbxdata = '';
 
     public function __construct()
