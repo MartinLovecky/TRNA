@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Yuha\Trna\Core\Controllers;
 
 use Yuha\Trna\Core\Contracts\{DependentPlugin, PluginInterface};
+use Yuha\Trna\Plugins\Cpll;
 use Yuha\Trna\Plugins\ManiaLinks;
 use Yuha\Trna\Plugins\RaspVotes;
+use Yuha\Trna\Plugins\Tmxv;
 
 class PluginController
 {
@@ -14,12 +16,15 @@ class PluginController
     private array $plugins = [];
 
     public function __construct(
+        private Cpll $cpll,
+        private ManiaLinks $maniaLinks,
         private RaspVotes $raspVotes,
-        private ManiaLinks $maniaLinks
+        private Tmxv $tmxv
     ) {
         $this->plugins = [
-            RaspVotes::class => $this->raspVotes,
             ManiaLinks::class => $this->maniaLinks,
+            RaspVotes::class  => $this->raspVotes,
+            Tmxv::class       => $this->tmxv,
         ];
 
         foreach ($this->plugins as $plugin) {

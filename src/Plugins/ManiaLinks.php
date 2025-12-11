@@ -63,7 +63,7 @@ class ManiaLinks implements DependentPlugin
         $this->client->sendXmlToLogin($login, "<manialink id='{$id}'></manialink>");
     }
 
-    private function handleAction(TmContainer $player, Panel $panel)
+    private function handleAction(TmContainer $player, Panel $panel): void
     {
         $choice = $panel->choiceName($player->get("{$panel->name}.currentPage"));
         $result = match ($panel) {
