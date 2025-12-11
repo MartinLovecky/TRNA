@@ -6,16 +6,16 @@ namespace Yuha\Trna\Core\Controllers;
 
 use Revolt\EventLoop;
 use Yuha\Trna\Core\Color;
-use Yuha\Trna\Core\Server;
-use Yuha\Trna\Service\Aseco;
-use Yuha\Trna\Core\TmContainer;
-use Yuha\Trna\Core\Enums\Status;
 use Yuha\Trna\Core\Enums\Restart;
-use Yuha\Trna\Plugins\ManiaLinks;
-use Yuha\Trna\Repository\Players;
-use Yuha\Trna\Repository\Challange;
+use Yuha\Trna\Core\Enums\Status;
+use Yuha\Trna\Core\Server;
+use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Infrastructure\Gbx\RemoteClient;
+use Yuha\Trna\Plugins\ManiaLinks;
+use Yuha\Trna\Repository\Challange;
+use Yuha\Trna\Repository\Players;
+use Yuha\Trna\Service\Aseco;
 
 class AppController
 {
@@ -28,7 +28,8 @@ class AppController
         private Challange $challange,
         private Players $players,
         private PluginController $pluginController,
-    ) {}
+    ) {
+    }
 
     public function run(): void
     {
@@ -81,7 +82,7 @@ class AppController
             $this->client->query('GetVersion')->get('result'),
             $this->client->query('GetLadderServerLimits')->get('result'),
             $this->client->query('GetServerPackMask')->get('result'),
-            $this->client->query('GetServerOptions')->get('result')
+            $this->client->query('GetServerOptions')->get('result'),
         );
     }
 
@@ -90,7 +91,6 @@ class AppController
         $ip = Server::$ip;
         $port = Server::$port;
         $name = Server::$name;
-        $serverLogin = Server::$login;
         $game = Server::$game;
         $packmask = Server::$packMask;
         $version = Server::$version;
@@ -100,7 +100,7 @@ class AppController
 
         Aseco::consoleText('###############################################################################');
         Aseco::consoleText("  TRNA   : {$version} running on {$ip}:{$port}");
-        Aseco::consoleText("  Name   : {$name} - {$serverLogin}");
+        Aseco::consoleText("  Name   : {$name}");
         Aseco::consoleText("  Game   : {$game} - {$packmask} - {$gameMode->name}");
         Aseco::consoleText("  Version: {$version} / {$build}");
         Aseco::consoleText('  Authors: Florian Schnell & Assembler Maniac');
@@ -151,7 +151,9 @@ class AppController
         $this->client->sendChatMessageToLogin($msg, $player->get('Login'));
     }
 
-    private function onPlayerDisconnect(TmContainer $cb) {}
+    private function onPlayerDisconnect(TmContainer $cb)
+    {
+    }
 
     private function onChat(TmContainer $cb): void
     {
@@ -174,9 +176,9 @@ class AppController
         if (preg_match('/^([+-]+)(?:\s+(.*))?$/', $message, $m)) {
             // +, ++, +++, -, --, ---
             $signs = $m[1];
-            $count = strlen($signs);
+            $count = \strlen($signs);
             $type  = $signs[0] === '+' ? 'plus' : 'minus';
-            //plus1, plus2 ... 
+            //plus1, plus2 ...
             $cmdName = $type . $count;
         } elseif (str_starts_with($message, '/')) {
             $parts = preg_split('/\s+/', substr($message, 1), 3);
@@ -195,9 +197,13 @@ class AppController
         $this->pluginController->invokeAllMethods('onChatCommand', $player);
     }
 
-    private function onPlayerCp(TmContainer $cb) {}
+    private function onPlayerCp(TmContainer $cb)
+    {
+    }
 
-    private function onFinish(TmContainer $cb) {}
+    private function onFinish(TmContainer $cb)
+    {
+    }
 
     private function onBeginRound(): void
     {
@@ -209,14 +215,18 @@ class AppController
         $this->pluginController->invokeAllMethods('onEndRound');
     }
 
-    private function gameStatusChanged(TmContainer $cb) {}
+    private function gameStatusChanged(TmContainer $cb)
+    {
+    }
 
     private function newChallenge()
     {
         $this->pluginController->invokeAllMethods('onNewChallenge');
     }
 
-    private function endChallenge() {}
+    private function endChallenge()
+    {
+    }
 
     private function onAnswer(TmContainer $cb): void
     {

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Repository;
 
-use Yuha\Trna\Service\Aseco;
+use Yuha\Trna\Core\Controllers\RepoController;
 use Yuha\Trna\Core\Enums\{GameMode, Table};
 use Yuha\Trna\Core\{Server, TmContainer};
-use Yuha\Trna\Infrastructure\Tmx\TmxFetcher;
-use Yuha\Trna\Core\Controllers\RepoController;
 use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Infrastructure\Gbx\{Client, GbxFetcher};
+use Yuha\Trna\Infrastructure\Tmx\TmxFetcher;
+use Yuha\Trna\Service\Aseco;
 
 class Challange
 {
@@ -60,7 +60,7 @@ class Challange
     public function listMaps(int $size = 1, int $index = 1): TmContainer
     {
         $list = $this->client->query('GetChallengeList', [$size, $index])->get('result');
-        $list->each(function (TmContainer $c) {
+        $list->each(static function (TmContainer $c) {
             if ($c->has('FileName') || $c->has('GoldTime')) {
                 $c->setMultiple([
                     'FileName'   => str_replace('\\', \DIRECTORY_SEPARATOR, $c->get('FileName', '')),

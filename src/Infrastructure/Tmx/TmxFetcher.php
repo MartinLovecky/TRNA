@@ -10,7 +10,7 @@ use Yuha\Trna\Service\{Aseco, HttpClient};
 final class TmxFetcher
 {
     private const string TMXURI = 'https://tmnforever.tm-exchange.com/apiget.aspx';
-
+    private const string VIDEO = 'https://tmnf.exchange/api/videos';
     public ?int $id = null;
     public ?int $userid = null;
     public ?int $awards = null;
@@ -21,6 +21,9 @@ final class TmxFetcher
 
     public string $acomment = '';
     public ?string $replayurl = null;
+    public ?string $ytlink = null;
+    public ?string $ytTitle = null;
+    public ?string $publishedAt = null;
     public ?string $game = null;
     public ?string $pageurl = null;
     public ?string $imageurl = null;
@@ -44,7 +47,6 @@ final class TmxFetcher
     public function __construct(private HttpClient $httpClient)
     {
         $this->httpClient->setConnectTimeout(60);
-        $this->httpClient->disableDebug();
     }
 
     public function initTmx(string $uid): void
@@ -74,8 +76,14 @@ final class TmxFetcher
             'id' => $this->id,
         ]);
 
+        $tmxYoutube = $this->httpClient->get(self::VIDEO, [
+            'fields'  => 'LinkId,Title,PublishedAt',
+            'trackid' => $this->id,
+        ]);
+
         $this->populateMisc($misc);
         $this->populateRecords($records);
+        $this->populateLink($tmxYoutube);
     }
 
     public function getRecords(): array
@@ -137,6 +145,17 @@ final class TmxFetcher
         usort($this->records, static fn (TmxRecord $a, TmxRecord $b) => $a->time <=> $b->time);
 
         $this->buildLeaderboard();
+    }
+
+    private function populateLink(string $raw): void
+    {
+        $r = Aseco::safeJsonDecode($raw)['Results'][0] ?? [];
+
+        if (!empty($r)) {
+            $this->ytlink  = $r['LinkId'];
+            $this->ytTitle = $r['Title'];
+            $this->publishedAt = $this->tryParseDate($r['PublishedAt']);
+        }
     }
 
     private function parseRecord(string $line): ?TmxRecord
@@ -211,7 +230,7 @@ final class TmxFetcher
 
     private function tryParseDate(string $str): ?\DateTimeImmutable
     {
-        foreach (['m/d/Y g:i:s A', 'Y-m-d H:i:s', DATE_ATOM] as $fmt) {
+        foreach (['m/d/Y g:i:s A', 'Y-m-d H:i:s', 'Y-m-d\TH:i:s', DATE_ATOM] as $fmt) {
             $dt = \DateTimeImmutable::createFromFormat($fmt, $str);
             if ($dt !== false) {
                 return $dt;

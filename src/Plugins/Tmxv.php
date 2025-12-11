@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Plugins;
 
-use Yuha\Trna\Core\TmContainer;
-use Yuha\Trna\Service\YoutubeClient;
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
+use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Repository\Challange;
+use Yuha\Trna\Service\Aseco;
+use Yuha\Trna\Service\YoutubeClient;
 
 class Tmxv implements DependentPlugin
 {
@@ -18,22 +19,33 @@ class Tmxv implements DependentPlugin
     public function __construct(
         private Challange $challange,
         private YoutubeClient $youtubeClient
-    ) {}
+    ) {
+    }
 
     public function setRegistry(PluginController $pluginController): void
     {
         $this->pluginController = $pluginController;
     }
 
+    //TODO
     public function onNewChallenge(): void
     {
         $tmx = $this->challange->getTmx();
 
-        if (!isset($tmx->id)) {
+        if (isset($tmx->ytlink)) {
+            // isset($tmx->replayurl)
+            // $tmx->replayurl link best replay.gbx if none null
+            // $tmx->ytlink link to youtube video if none null
             return;
         }
 
-        dd($tmx->replayurl);
+        $gbx = $this->challange->getGbx();
+        $mapName = Aseco::stripColors($gbx->name);
+        // NOTE: search try find best result for Trackmania videos if none empty
+        $search = $this->youtubeClient->search($mapName);
+
+        if (!empty($search)) {
+        }
     }
 
     public function onChatCommand(TmContainer $player): void
@@ -62,8 +74,16 @@ class Tmxv implements DependentPlugin
         return !empty($this->videos);
     }
 
-    private function showWindow() {}
-    private function noVideos(string $login) {}
-    private function handleVideoArgs() {}
-    private function help(TmContainer $player) {}
+    private function showWindow()
+    {
+    }
+    private function noVideos(string $login)
+    {
+    }
+    private function handleVideoArgs()
+    {
+    }
+    private function help(TmContainer $player)
+    {
+    }
 }

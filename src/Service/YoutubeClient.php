@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Service;
 
-use Google\Service\YouTube;
 use Google\Client as GoogleClient;
+use Google\Service\YouTube;
 use Google\Service\YouTube\SearchResult;
-use Yuha\Trna\Service\Internal\{YoutubeVideoResult, YoutubeSearchResults};
+use Yuha\Trna\Service\Internal\{YoutubeSearchResults, YoutubeVideoResult};
 
 class YoutubeClient
 {
@@ -22,9 +22,7 @@ class YoutubeClient
     /**
      * This allow us to search any video on yt
      *
-     * @param string $query
      * @param integer $maxResults
-     * @return YoutubeSearchResults
      */
     public function search(string $query, int $maxResults = 20): YoutubeSearchResults
     {
@@ -40,15 +38,15 @@ class YoutubeClient
         $ranked = $this->filterPlayableVideos($ranked);
 
         $results = array_map(
-            static fn(SearchResult $item) => new YoutubeVideoResult(
+            static fn (SearchResult $item) => new YoutubeVideoResult(
                 videoLink: 'youtu.be/' . $item->getId()->getVideoId(),
                 title: $item->getSnippet()->getTitle(),
                 channel: $item->getSnippet()->getChannelTitle(),
                 description: $item->getSnippet()->getDescription(),
                 publishedAt: new \DateTimeImmutable($item->getSnippet()->getPublishedAt()),
-                thumbnail: $item->getSnippet()->getThumbnails()->getDefault()->getUrl()
+                thumbnail: $item->getSnippet()->getThumbnails()->getDefault()->getUrl(),
             ),
-            $ranked
+            $ranked,
         );
 
         return new YoutubeSearchResults($results);
@@ -125,15 +123,15 @@ class YoutubeClient
         }
 
         // Sort by highest score
-        usort($ranked, static fn($a, $b) => $b['score'] <=> $a['score']);
+        usort($ranked, static fn ($a, $b) => $b['score'] <=> $a['score']);
 
         $best = $ranked[0]['score'];
         $absoluteMin = 2.0;
         $threshold = max($best * 0.7, $absoluteMin);
 
         return array_map(
-            static fn($r) => $r['item'],
-            array_filter($ranked, static fn($r) => $r['score'] >= $threshold)
+            static fn ($r) => $r['item'],
+            array_filter($ranked, static fn ($r) => $r['score'] >= $threshold),
         );
     }
 

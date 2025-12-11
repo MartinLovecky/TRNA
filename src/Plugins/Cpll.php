@@ -6,5 +6,7 @@ namespace Yuha\Trna\Plugins;
 
 class Cpll
 {
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 }

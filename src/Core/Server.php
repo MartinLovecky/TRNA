@@ -8,7 +8,7 @@ final class Server
 {
     public static string $game = 'TMF';
     public static string $ip = '127.0.0.1';
-    public static string $version = '3.0.0';
+    public static string $version = '2.11.26';
     public static string $rootDir = '';
     public static string $gamePath = '';
     public static string $publicDir = '';

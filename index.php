@@ -45,10 +45,10 @@ if (defined('STDIN')) {
     });
 }
 
-foreach (Yuha\Trna\Core\Enums\Table::cases() as $table) {
-    $fluent->executeFile($table);
-    $structure->validate($table);
-}
+// foreach (Yuha\Trna\Core\Enums\Table::cases() as $table) {
+//     $fluent->executeFile($table);
+//     $structure->validate($table);
+// }
 
 // ---------- RUN CONTROLLER ----------
 Revolt\EventLoop::queue(static function () use ($controller) {

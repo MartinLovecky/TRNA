@@ -53,6 +53,7 @@ class HttpClient
         $this->cert = Server::$publicDir . 'cacert.pem';
         $this->cookieFile = Server::$publicDir . 'cookies.txt';
         $this->initializeCurl();
+        $this->disableDebug();
     }
 
     /**
