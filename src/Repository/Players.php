@@ -59,7 +59,7 @@ class Players
 
     public function getDetailedPlayerInfo(string $login): TmContainer
     {
-        $c = $this->client->query('GetDetailedPlayerInfo', [$login]);
+        $c = $this->client->query('GetDetailedPlayerInfo', [$login])->get('result');
         $c->set('Nation', Aseco::mapCountry($c->get('Path')));
 
         return $c;
@@ -67,7 +67,7 @@ class Players
 
     public function getPlayerList(int $limit = 30, int $start = 0, int $type = 0): TmContainer
     {
-        return $this->client->query('GetPlayerList', [$limit, $start, $type]);
+        return $this->client->query('GetPlayerList', [$limit, $start, $type])->get('result');
     }
 
     private function hasPlayer(string $login): bool

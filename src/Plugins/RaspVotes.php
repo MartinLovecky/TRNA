@@ -9,13 +9,16 @@ use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\{PluginController, VoteController};
 use Yuha\Trna\Core\Enums\{Panel, Votes};
 use Yuha\Trna\Core\TmContainer;
+use Yuha\Trna\Core\Traits\LoggerAware;
 
 class RaspVotes implements DependentPlugin
 {
+    use LoggerAware;
     private PluginController $pluginController;
 
     public function __construct(private VoteController $voteController)
     {
+        $this->initLog('RaspVotes');
     }
 
     /**
@@ -28,6 +31,7 @@ class RaspVotes implements DependentPlugin
 
     public function onChatCommand(TmContainer $player): void
     {
+        $this->logDebug('msg', $player->toArray());
         $votes = Votes::tryFrom($player->get('command.name'));
 
         if (!$votes) {

@@ -10,6 +10,7 @@ use Yuha\Trna\Core\Enums\Restart;
 use Yuha\Trna\Core\Enums\Status;
 use Yuha\Trna\Core\Server;
 use Yuha\Trna\Core\TmContainer;
+use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Infrastructure\Gbx\RemoteClient;
 use Yuha\Trna\Plugins\ManiaLinks;
@@ -19,6 +20,7 @@ use Yuha\Trna\Service\Aseco;
 
 class AppController
 {
+    use LoggerAware;
     private Restart $restarting = Restart::NONE;
     private Status $currStatus = Status::NONE;
 
@@ -29,6 +31,7 @@ class AppController
         private Players $players,
         private PluginController $pluginController,
     ) {
+        $this->initLog('AppController');
     }
 
     public function run(): void
@@ -65,8 +68,8 @@ class AppController
                 EventLoop::cancel($id);
                 EventLoop::queue(function () {
                     $this->syncServer();
-                    $this->sendHeader();
-                    $this->newChallenge();
+                    //$this->sendHeader();
+                    //$this->newChallenge();
                 });
                 return;
             }
@@ -115,6 +118,7 @@ class AppController
     private function startCallbackPump(): void
     {
         EventLoop::repeat(0.05, function () {
+            $this->client->readCallBack();
             while ($cb = $this->client->popCBResponse()) {
                 $this->dispatchCallback($cb);
             }
@@ -194,6 +198,7 @@ class AppController
             'command.param' => $cmdParam,
             'command.arg'   => $cmdArg,
         ]);
+        $this->logDebug('x', [$cmdArg, $cmdName, $cmdArg]);
         $this->pluginController->invokeAllMethods('onChatCommand', $player);
     }
 
