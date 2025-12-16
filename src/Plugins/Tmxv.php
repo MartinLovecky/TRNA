@@ -38,7 +38,7 @@ class Tmxv implements DependentPlugin
             // $tmx->ytlink link to youtube video if none null
             return;
         }
-
+        // TODO this should be optional
         $gbx = $this->challange->getGbx();
         $mapName = Aseco::stripColors($gbx->name);
         // NOTE: search try find best result for Trackmania videos if none empty

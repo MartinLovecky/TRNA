@@ -15,8 +15,10 @@ class YoutubeClient
 
     public function __construct(private GoogleClient $gClient)
     {
-        $this->gClient->setDeveloperKey($_ENV['G_API_KEY']);
-        $this->yt = new YouTube($this->gClient);
+        if (isset($_ENV['G_API_KEY'])) {
+            $this->gClient->setDeveloperKey($_ENV['G_API_KEY']);
+            $this->yt = new YouTube($this->gClient);
+        }
     }
 
     /**
@@ -38,7 +40,7 @@ class YoutubeClient
         $ranked = $this->filterPlayableVideos($ranked);
 
         $results = array_map(
-            static fn (SearchResult $item) => new YoutubeVideoResult(
+            static fn(SearchResult $item) => new YoutubeVideoResult(
                 videoLink: 'youtu.be/' . $item->getId()->getVideoId(),
                 title: $item->getSnippet()->getTitle(),
                 channel: $item->getSnippet()->getChannelTitle(),
@@ -123,15 +125,15 @@ class YoutubeClient
         }
 
         // Sort by highest score
-        usort($ranked, static fn ($a, $b) => $b['score'] <=> $a['score']);
+        usort($ranked, static fn($a, $b) => $b['score'] <=> $a['score']);
 
         $best = $ranked[0]['score'];
         $absoluteMin = 2.0;
         $threshold = max($best * 0.7, $absoluteMin);
 
         return array_map(
-            static fn ($r) => $r['item'],
-            array_filter($ranked, static fn ($r) => $r['score'] >= $threshold),
+            static fn($r) => $r['item'],
+            array_filter($ranked, static fn($r) => $r['score'] >= $threshold),
         );
     }
 

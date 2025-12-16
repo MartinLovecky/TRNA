@@ -6,6 +6,7 @@ namespace Yuha\Trna\Core\Controllers;
 
 use Yuha\Trna\Core\Contracts\{DependentPlugin, PluginInterface};
 use Yuha\Trna\Plugins\Cpll;
+use Yuha\Trna\Plugins\Karma;
 use Yuha\Trna\Plugins\ManiaLinks;
 use Yuha\Trna\Plugins\RaspVotes;
 use Yuha\Trna\Plugins\Tmxv;
@@ -17,6 +18,7 @@ class PluginController
 
     public function __construct(
         private Cpll $cpll,
+        private Karma $karma,
         private ManiaLinks $maniaLinks,
         private RaspVotes $raspVotes,
         private Tmxv $tmxv

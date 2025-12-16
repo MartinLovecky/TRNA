@@ -28,7 +28,7 @@ final class RemoteClient
         ]);
     }
 
-    public function execute(
+    public static function execute(
         string $method,
         array $params = [],
         bool $multi = false
@@ -40,7 +40,7 @@ final class RemoteClient
         return self::$client->query($method, $params);
     }
 
-    public function getAdmin(): TmContainer
+    public static function getAdmin(): TmContainer
     {
         return self::$admin;
     }

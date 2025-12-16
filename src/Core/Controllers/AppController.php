@@ -68,8 +68,8 @@ class AppController
                 EventLoop::cancel($id);
                 EventLoop::queue(function () {
                     $this->syncServer();
-                    //$this->sendHeader();
-                    //$this->newChallenge();
+                    $this->sendHeader();
+                    $this->newChallenge();
                 });
                 return;
             }
@@ -198,7 +198,7 @@ class AppController
             'command.param' => $cmdParam,
             'command.arg'   => $cmdArg,
         ]);
-        $this->logDebug('x', [$cmdArg, $cmdName, $cmdArg]);
+
         $this->pluginController->invokeAllMethods('onChatCommand', $player);
     }
 

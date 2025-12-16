@@ -53,7 +53,10 @@ class HttpClient
         $this->cert = Server::$publicDir . 'cacert.pem';
         $this->cookieFile = Server::$publicDir . 'cookies.txt';
         $this->initializeCurl();
-        $this->disableDebug();
+        $this->addDefaultHeader(
+            'Content-Type',
+            'application/x-www-form-urlencoded; charset=UTF-8',
+        );
     }
 
     /**
@@ -179,6 +182,24 @@ class HttpClient
     }
 
     /**
+     * Send XML data via POST request
+     */
+    public function postXml(string $endpoint, string $xml, string $userAgent = 'YuhaTrnaHttpClient/1.0'): string|bool
+    {
+        $headers = [
+            'User-Agent: ' . $userAgent,
+            'Content-Type: text/xml; charset=UTF-8',
+            'Content-Length: ' . \strlen($xml),
+            'Cache-Control: no-cache',
+            'Accept-Encoding: gzip, deflate',
+            'Connection: Keep-Alive',
+            'Keep-Alive: timeout=600, max=2000',
+        ];
+
+        return $this->post($endpoint, $xml, $headers);
+    }
+
+    /**
      * Check if a connection to endpoint is alive using HEAD request
      * This preserves connection reuse capability
      */
@@ -300,6 +321,10 @@ class HttpClient
     {
         $this->debugEnabled = true;
 
+        if ($logFile === null) {
+            $logFile = Server::$logsDir . 'httpclient-debug-' . date('Y-m-d_H-i-s') . '.log';
+        }
+
         if ($logFile) {
             if ($this->debugFp) {
                 fclose($this->debugFp);
@@ -338,7 +363,7 @@ class HttpClient
         $ch = $this->getCurlHandle();
 
         if ($method === 'GET' && !empty($params) && \is_array($params)) {
-            $endpoint .= '?' . http_build_query($params);
+            $endpoint .= '?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
         }
 
         curl_setopt($ch, CURLOPT_URL, $endpoint);
@@ -397,6 +422,19 @@ class HttpClient
         }
 
         return $response;
+    }
+
+    /**
+     * Set a custom User-Agent string for all requests
+     */
+    public function setUserAgent(string $userAgent): void
+    {
+        $this->baseOptions[CURLOPT_USERAGENT] = $userAgent;
+
+        // Apply immediately if cURL handle exists
+        if ($this->ch !== null) {
+            curl_setopt($this->ch, CURLOPT_USERAGENT, $userAgent);
+        }
     }
 
     /**

@@ -31,7 +31,6 @@ class RaspVotes implements DependentPlugin
 
     public function onChatCommand(TmContainer $player): void
     {
-        $this->logDebug('msg', $player->toArray());
         $votes = Votes::tryFrom($player->get('command.name'));
 
         if (!$votes) {
@@ -39,8 +38,10 @@ class RaspVotes implements DependentPlugin
         }
 
         $res = match ($votes) {
-            Votes::SKIP => $this->voteController->startVote($player, Panel::Skip),
+            Votes::SKIP    => $this->voteController->startVote($player, Panel::Skip),
             Votes::OP_SKIP => $this->voteController->startVote($player, Panel::Skip, false),
+            Votes::KICK    => $this->voteController->startVote($player, Panel::Kick),
+            Votes::OP_KICK => $this->voteController->startVote($player, Panel::Kick, false),
             default => null,
         };
 
@@ -57,8 +58,7 @@ class RaspVotes implements DependentPlugin
 
         match ($reason) {
             'vote_in_progress'    => $this->voteController->update($player, $choice),
-            'admin_skip'          => null, //skip with no window
-            'not_enough_players'  => null, //skip with no window
+            'admin_skip', 'not_enough_players' => $this->voteController->skip($player->get('Login')),
             default               => null
         };
     }
@@ -72,21 +72,22 @@ class RaspVotes implements DependentPlugin
             $status = $voteController->status();
             $remaining = $voteController->tick();
 
-            //REVIEW: ADD HERE TOTAL VOTES = PLAYER COUNT
-            if ($remaining <= 0) {
+            if ($remaining <= 0 || $status['total'] === $status['playerCnt']) {
                 EventLoop::cancel($id);
-                $voteController->resolveVote();
+                $voteController->resolveVote(); //TODO
                 $maniaLinks->closeDisplayToAll($panel->value);
                 return;
             }
-
-            $maniaLinks->displayToAll($panel->template(), [
-                'actions'   => $status['actions'],
-                'isAdmin'   => $player->get('isAdmin'),
-                'remaining' => $remaining,
-                'yes'       => $status['yes'],
-                'no'        => $status['no'],
-            ]);
+            // when closed do not display again
+            if ($status['choice'] !== 'close') {
+                $maniaLinks->displayToAll($panel->template(), [
+                    'actions'   => $status['actions'],
+                    'isAdmin'   => $player->get('isAdmin'),
+                    'remaining' => $remaining,
+                    'yes'       => $status['yes'],
+                    'no'        => $status['no'],
+                ]);
+            }
 
             $remaining--;
         });

@@ -1,0 +1,16 @@
+# Allow public/.env
+!public/.env
+
+# Ignore vendor folder
+vendor/
+
+# Ignore specific dotfiles
+.env
+.php-cs-fixer.cache
+
+# Ignore cache
+public/cache/*
+
+# Ignore phar and cookies
+php-cs-fixer-v3.phar
+public/cookies.txt

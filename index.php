@@ -1,5 +1,17 @@
 <?php
 
+/**
+ * Trackmania Server Controller
+ * php version 8.3.0 or higher
+ *
+ * @category Controller
+ * @package  Trackmania
+ * @author   yuha <yuha@gmail.com
+ * @license  MIT LICENCE
+ * @version  GIT: 5ba0430ef3c51a38ac5e9f86b0cac60dc5bddcd9
+ * @link     https://example.com
+ */
+
 declare(strict_types=1);
 
 if (version_compare(PHP_VERSION, '8.3.0', '<')) {
@@ -45,10 +57,14 @@ if (defined('STDIN')) {
     });
 }
 
-// foreach (Yuha\Trna\Core\Enums\Table::cases() as $table) {
-//     $fluent->executeFile($table);
-//     $structure->validate($table);
-// }
+// ----------Validate MYSQL DB ----------
+if ($_ENV['tables_initialized'] !== 'done') {
+    foreach (Yuha\Trna\Core\Enums\Table::cases() as $table) {
+        $fluent->executeFile($table);
+        $structure->validate($table);
+    }
+    Yuha\Trna\Service\Aseco::updateEnvFile('tables_initialized', 'done');
+}
 
 // ---------- RUN CONTROLLER ----------
 Revolt\EventLoop::queue(static function () use ($controller) {

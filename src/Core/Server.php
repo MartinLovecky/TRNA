@@ -70,9 +70,11 @@ final class Server
         self::$id = $info->get('PlayerId');
         self::$nickName = $info->get('NickName');
         self::$zone = substr($info->get('Path'), self::ZONE_OFFSET);
+
         self::$rights   = $info->get('OnlineRights');
         // build
         self::$build   = $version->get('Build');
+
         //ladder
         self::$ladderMin = $ladder->get('LadderServerLimitMin');
         self::$ladderMax = $ladder->get('LadderServerLimitMax');

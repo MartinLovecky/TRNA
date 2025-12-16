@@ -4,23 +4,29 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Core\Controllers;
 
-use Yuha\Trna\Core\Enums\Panel;
-use Yuha\Trna\Core\TmContainer;
+use Yuha\Trna\Core\{Color, TmContainer};
+use Yuha\Trna\Core\Enums\{GameMode, Panel};
 use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Core\Window\WindowRegistry;
-use Yuha\Trna\Repository\Players;
+use Yuha\Trna\Infrastructure\Gbx\Client;
+use Yuha\Trna\Repository\{Challange, Players};
 
 class VoteController
 {
     use LoggerAware;
     private const int DURATION = 35;
     private const int MIN_PLAYERS = 2;
+    private const float REQUIRED_PERCENT = 0.6;
     private const bool ALLOW_CANCEL = true;
 
     private ?array $vote = null;
 
-    public function __construct(private Players $players)
-    {
+    public function __construct(
+        private Color $color,
+        private Client $client,
+        private Challange $challange,
+        private Players $players
+    ) {
         $this->initLog('VoteController');
     }
 
@@ -37,9 +43,9 @@ class VoteController
             return ['reason' => 'admin_skip'];
         }
 
-        // if ($this->players->numPlayers < self::MIN_PLAYERS) {
-        //     return ['reason' => 'CFV'];
-        // }
+        if ($this->players->numPlayers < self::MIN_PLAYERS) {
+            return ['reason' => 'not_enought_players'];
+        }
 
         $actions = [];
         foreach ($panel->choices() as $key => $value) {
@@ -57,6 +63,7 @@ class VoteController
             'requiredP'       => 0.6,
             'minPlayers'      => self::MIN_PLAYERS,
             'playerCnt'       => $this->players->numPlayers,
+            'total'           => 0,
             'votes'           => [],
             'choice'          => 'none',
             'header'          => "{$panel->name} vote",
@@ -85,8 +92,6 @@ class VoteController
             return ['reason' => 'no_active_vote'];
         }
 
-        $this->logDebug("status", $this->vote);
-
         $player->set("{$status['type']}.vote", $choice);
 
         return ['ok' => true];
@@ -94,7 +99,34 @@ class VoteController
 
     public function resolveVote(): void
     {
-        $this->logDebug("status", $this->status());
+        $status = $this->status();
+        $playerCount = $status['playerCnt'];
+
+        // REVIEW for one player hnadled on startvote so this should not happen
+        // but if player disconects I am not sure
+        if ($playerCount < self::MIN_PLAYERS) {
+            //FAILED no enough players cancel vote send message
+            $this->vote = null;
+            return;
+        }
+
+        $yes = $status['yes'];
+        $yesPercent = $playerCount > 0 ? ($yes / $playerCount) : 0;
+
+        if ($yesPercent <= self::REQUIRED_PERCENT) {
+            //FAILED not enough yes votes cancel vote send message
+            $this->vote = null;
+            return;
+        }
+
+        match ($status['type']) {
+            'Skip'   => $this->skip($status['initiator']),
+            'Replay' => null,
+            'Kick'   => null,
+            default  => null,
+        };
+
+        $this->vote = null;
     }
 
     public function status(): array
@@ -159,5 +191,19 @@ class VoteController
             'total' => $yes + $no,
             'playerCnt' => $this->vote['playerCnt'],
         ];
+    }
+
+    public function skip(string $initiator): void
+    {
+        $gameMode = $this->challange->gameMode();
+        $msg = <<<MSG
+            {$this->color->green}Player {$initiator}{$this->color->z->green} skips challenge!
+        MSG;
+        if ($gameMode === GameMode::Cup) {
+            $this->client->query('NextChallenge', [true]);
+            $this->client->sendChatMessageToAll('');
+        }
+        $this->client->query('NextChallenge');
+        $this->client->sendChatMessageToAll($msg);
     }
 }
