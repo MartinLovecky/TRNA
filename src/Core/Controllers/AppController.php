@@ -5,17 +5,12 @@ declare(strict_types=1);
 namespace Yuha\Trna\Core\Controllers;
 
 use Revolt\EventLoop;
-use Yuha\Trna\Core\Color;
-use Yuha\Trna\Core\Enums\Restart;
-use Yuha\Trna\Core\Enums\Status;
-use Yuha\Trna\Core\Server;
-use Yuha\Trna\Core\TmContainer;
+use Yuha\Trna\Core\{Color, Server, TmContainer};
+use Yuha\Trna\Core\Enums\{Restart, Status};
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Infrastructure\Gbx\Client;
-use Yuha\Trna\Infrastructure\Gbx\RemoteClient;
+use Yuha\Trna\Infrastructure\Gbx\{Client, RemoteClient};
 use Yuha\Trna\Plugins\ManiaLinks;
-use Yuha\Trna\Repository\Challange;
-use Yuha\Trna\Repository\Players;
+use Yuha\Trna\Repository\{Challange, Players};
 use Yuha\Trna\Service\Aseco;
 
 class AppController
@@ -110,9 +105,6 @@ class AppController
         Aseco::consoleText('  Re-Authored: Xymph');
         Aseco::consoleText('  Remake: Yuhzel');
         Aseco::consoleText('###############################################################################');
-
-        $startup = "{$c->yellow}*** TmController running on {$c->white}{$ip}:{$port}{$c->yellow} ***";
-        $this->client->sendChatMessageToAll($startup);
     }
 
     private function startCallbackPump(): void
@@ -153,6 +145,7 @@ class AppController
         MSG . Server::$name;
 
         $this->client->sendChatMessageToLogin($msg, $player->get('Login'));
+        $this->pluginController->invokeAllMethods('onPlayerConnect', $player);
     }
 
     private function onPlayerDisconnect(TmContainer $cb)
@@ -182,7 +175,7 @@ class AppController
             $signs = $m[1];
             $count = \strlen($signs);
             $type  = $signs[0] === '+' ? 'plus' : 'minus';
-            //plus1, plus2 ...
+            // plus1, plus2 ...
             $cmdName = $type . $count;
         } elseif (str_starts_with($message, '/')) {
             $parts = preg_split('/\s+/', substr($message, 1), 3);
@@ -202,12 +195,14 @@ class AppController
         $this->pluginController->invokeAllMethods('onChatCommand', $player);
     }
 
-    private function onPlayerCp(TmContainer $cb)
+    private function onPlayerCp(TmContainer $cb): void
     {
+        $this->pluginController->invokeAllMethods('onCheckpoint', $cb);
     }
 
-    private function onFinish(TmContainer $cb)
+    private function onFinish(TmContainer $cb): void
     {
+        $date = date('Y/m/d;H:i:s');
     }
 
     private function onBeginRound(): void

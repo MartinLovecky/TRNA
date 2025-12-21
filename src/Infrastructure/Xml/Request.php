@@ -74,7 +74,7 @@ class Request
         $valueElement = $this->dom->createElement('value');
         $arrayElement = $this->dom->createElement('array');
         $dataElement = $this->dom->createElement('data');
-
+        $dataElement->appendChild($this->dom->createTextNode(''));
         foreach ($calls as $call) {
             // Each call is a <struct>
             $callStruct = $this->dom->createElement('struct');
@@ -83,7 +83,7 @@ class Request
             $memberMethod = $this->dom->createElement('member');
             $nameMethod = $this->dom->createElement('name', 'methodName');
             $valueMethod = $this->dom->createElement('value');
-            $valueMethod->appendChild($this->dom->createTextNode($call['methodName']));
+            $valueMethod->appendChild($this->dom->createElement('string', $call['methodName']));
             $memberMethod->appendChild($nameMethod);
             $memberMethod->appendChild($valueMethod);
             $callStruct->appendChild($memberMethod);
@@ -94,7 +94,7 @@ class Request
             $paramsValue = $this->dom->createElement('value');
             $paramsArray = $this->dom->createElement('array');
             $paramsData = $this->dom->createElement('data');
-
+            $paramsData->appendChild($this->dom->createTextNode(''));
             foreach ($call['params'] as $arg) {
                 $val = $this->dom->createElement('value');
                 $val->appendChild(RpcConverter::serialize($arg, $this->dom));

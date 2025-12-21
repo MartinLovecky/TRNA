@@ -11,6 +11,8 @@ $container->delegate(new \League\Container\ReflectionContainer(true));
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
+Yuha\Trna\Core\Server::setPaths();
+
 $client = $container->get(Yuha\Trna\Infrastructure\Gbx\Client::class);
 
 RemoteClient::init($client, $_ENV['admin_login']);

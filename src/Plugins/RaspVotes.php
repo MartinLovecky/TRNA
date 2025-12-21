@@ -10,14 +10,17 @@ use Yuha\Trna\Core\Controllers\{PluginController, VoteController};
 use Yuha\Trna\Core\Enums\{Panel, Votes};
 use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
+use Yuha\Trna\Core\Window\WindowBuilder;
 
 class RaspVotes implements DependentPlugin
 {
     use LoggerAware;
     private PluginController $pluginController;
 
-    public function __construct(private VoteController $voteController)
-    {
+    public function __construct(
+        private VoteController $voteController,
+        private WindowBuilder $windowBuilder
+    ) {
         $this->initLog('RaspVotes');
     }
 
@@ -47,6 +50,7 @@ class RaspVotes implements DependentPlugin
 
         if (isset($res['reason'])) {
             $this->handleReason($player, $res['reason']);
+            return;
         }
 
         $this->startVoteCountdown($player, $votes->panel());
@@ -57,36 +61,32 @@ class RaspVotes implements DependentPlugin
         $choice = $this->voteController->status()['choice'] ?? 'none';
 
         match ($reason) {
-            'vote_in_progress'    => $this->voteController->update($player, $choice),
+            'vote_in_progress' => $this->voteController->update($player, $choice),
             'admin_skip', 'not_enough_players' => $this->voteController->skip($player->get('Login')),
-            default               => null
+            default => null
         };
     }
 
     private function startVoteCountdown(TmContainer $player, Panel $panel): void
     {
-        $voteController = $this->voteController;
         $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
 
-        EventLoop::repeat(1.0, static function (string $id) use ($player, $panel, $voteController, $maniaLinks) {
-            $status = $voteController->status();
-            $remaining = $voteController->tick();
+        EventLoop::repeat(1.0, function (string $id) use ($player, $panel, $maniaLinks) {
+            $status = $this->voteController->status();
+            $remaining = $this->voteController->tick();
 
             if ($remaining <= 0 || $status['total'] === $status['playerCnt']) {
                 EventLoop::cancel($id);
-                $voteController->resolveVote(); //TODO
+                $this->voteController->resolveVote(); //TODO
                 $maniaLinks->closeDisplayToAll($panel->value);
                 return;
             }
             // when closed do not display again
             if ($status['choice'] !== 'close') {
-                $maniaLinks->displayToAll($panel->template(), [
-                    'actions'   => $status['actions'],
-                    'isAdmin'   => $player->get('isAdmin'),
-                    'remaining' => $remaining,
-                    'yes'       => $status['yes'],
-                    'no'        => $status['no'],
-                ]);
+                $maniaLinks->displayToAll(
+                    $panel->template(),
+                    $this->windowBuilder->data($panel, $player),
+                );
             }
 
             $remaining--;

@@ -6,6 +6,7 @@ namespace Yuha\Trna\Core\Controllers;
 
 use Yuha\Trna\Core\Contracts\{DependentPlugin, PluginInterface};
 use Yuha\Trna\Plugins\Cpll;
+use Yuha\Trna\Plugins\Dedimania;
 use Yuha\Trna\Plugins\Karma;
 use Yuha\Trna\Plugins\ManiaLinks;
 use Yuha\Trna\Plugins\RaspVotes;
@@ -18,12 +19,14 @@ class PluginController
 
     public function __construct(
         private Cpll $cpll,
+        private Dedimania $dedimania,
         private Karma $karma,
         private ManiaLinks $maniaLinks,
         private RaspVotes $raspVotes,
         private Tmxv $tmxv
     ) {
         $this->plugins = [
+            Dedimania::class  => $this->dedimania,
             ManiaLinks::class => $this->maniaLinks,
             RaspVotes::class  => $this->raspVotes,
             Tmxv::class       => $this->tmxv,

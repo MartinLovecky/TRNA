@@ -26,7 +26,7 @@ class WindowRegistry
      */
     public static function register(Panel $panel, int $totalPages)
     {
-        self::$storage[$panel->value] = [
+        self::$storage[$panel->name] = [
             'name' => $panel->name,
             'totalPages' => $totalPages,
         ];
@@ -39,7 +39,7 @@ class WindowRegistry
      */
     public static function getName(Panel $panel): ?string
     {
-        return self::$storage[$panel->value]['name'] ?? null;
+        return self::$storage[$panel->name]['name'] ?? null;
     }
 
     /**
@@ -49,7 +49,7 @@ class WindowRegistry
      */
     public static function has(Panel $panel): bool
     {
-        return isset(self::$storage[$panel->value]);
+        return isset(self::$storage[$panel->name]);
     }
 
     /**
@@ -59,7 +59,7 @@ class WindowRegistry
      */
     public static function getTotalPages(Panel $panel): int
     {
-        return self::$storage[$panel->value]['totalPages'] ?? 0;
+        return self::$storage[$panel->name]['totalPages'] ?? 0;
     }
 
     /**

@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Yuha\Trna\Infrastructure\Gbx;
 
 use Yuha\Trna\Core\TmContainer;
-use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Infrastructure\Xml\{Request, Response};
-use Yuha\Trna\Service\{Aseco, Socket, WidgetBuilder};
+use Yuha\Trna\Service\{Socket, WidgetBuilder};
 
 class Client
 {
-    use LoggerAware;
     private const int MAX_REQ_SIZE = 512 * 1024 - 8;
     private const int MAX_RES_SIZE = 4096 * 1024;
     private const float TIMEOUT = 20.0;
@@ -27,7 +25,6 @@ class Client
         private Response $response,
         private WidgetBuilder $widgetBuilder
     ) {
-        $this->initLog('Client');
         $this->socket->setTimeout(self::TIMEOUT);
         $this->init();
         $this->query('Authenticate', [$_ENV['admin_login'], $_ENV['admin_password']]);
@@ -47,8 +44,7 @@ class Client
 
         $result = $this->result($method);
 
-        if ($result->has('faultString')) {
-            Aseco::console("{$method} error {$result->get('faultString')}{$result->get('faultCode')}");
+        if ($result->has('result.faultString')) {
             throw new \Exception("{$method} error {$result->get('faultString')}{$result->get('faultCode')}");
         }
 

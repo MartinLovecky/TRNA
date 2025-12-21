@@ -2,7 +2,7 @@
 
 /**
  * Trackmania Server Controller
- * php version 8.3.0 or higher
+ * php version 8.5.0 or higher
  *
  * @category Controller
  * @package  Trackmania
@@ -14,8 +14,8 @@
 
 declare(strict_types=1);
 
-if (version_compare(PHP_VERSION, '8.3.0', '<')) {
-    throw new \RuntimeException('This script requires PHP 8.3.0 or higher.');
+if (version_compare(PHP_VERSION, '8.5.0', '<')) {
+    throw new \RuntimeException('This script requires PHP 8.5.0 or higher.');
 }
 
 require __DIR__ . '/vendor/autoload.php';

@@ -32,7 +32,10 @@ final class RpcConverter
 
         if (\is_string($value)) {
             if (Aseco::isBase64($value)) {
-                return $dom->createElement('base64', $value);
+                return $dom->createElement(
+                    'base64',
+                    $value === '' ? 'AA==' : $value,
+                );
             }
             if (!mb_check_encoding($value, 'UTF-8')) {
                 return $dom->createElement('base64', base64_encode($value));
@@ -75,7 +78,7 @@ final class RpcConverter
             return null;
         }
 
-        return match($tag) {
+        return match ($tag) {
             'string' => trim($element->textContent),
             'int', 'i4' => filter_var($element->textContent, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE),
             'boolean' => filter_var($element->textContent, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE),
@@ -284,5 +287,4 @@ final class RpcConverter
             return null;
         }
     }
-
 }

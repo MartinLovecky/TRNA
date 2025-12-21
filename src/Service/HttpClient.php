@@ -109,6 +109,12 @@ class HttpClient
             curl_setopt($this->ch, CURLOPT_VERBOSE, true);
             curl_setopt($this->ch, CURLOPT_STDERR, $this->debugFp);
         }
+
+        $sh = curl_share_init_persistent([
+            CURL_LOCK_DATA_DNS,
+            CURL_LOCK_DATA_CONNECT,
+        ]);
+        curl_setopt($this->ch, CURLOPT_SHARE, $sh);
     }
 
     /**

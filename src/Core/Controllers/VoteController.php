@@ -62,7 +62,6 @@ class VoteController
             'startedAt'       => $startedAt,
             'requiredP'       => 0.6,
             'minPlayers'      => self::MIN_PLAYERS,
-            'playerCnt'       => $this->players->numPlayers,
             'total'           => 0,
             'votes'           => [],
             'choice'          => 'none',
@@ -100,7 +99,7 @@ class VoteController
     public function resolveVote(): void
     {
         $status = $this->status();
-        $playerCount = $status['playerCnt'];
+        $playerCount = $this->players->playerCount();
 
         // REVIEW for one player hnadled on startvote so this should not happen
         // but if player disconects I am not sure
@@ -148,10 +147,10 @@ class VoteController
             'no'        => $cnt['no'],
             'total'     => $cnt['total'],
             'votes'     => array_keys($this->vote['votes']),
-            'playerCnt' => $this->players->numPlayers,
             'remaining' => $this->vote['remaining'],
             'param'     => $this->vote['param'],
             'arg'       => $this->vote['arg'],
+            'playerCnt' => $this->players->playerCount(),
         ];
     }
 
@@ -171,7 +170,7 @@ class VoteController
         $yes = $no = 0;
 
         if (!isset($this->vote)) {
-            return ['yes' => $yes, 'no' => $no, 'total' => 0, 'playerCnt' => $this->players->numPlayers];
+            return ['yes' => $yes, 'no' => $no, 'total' => 0];
         }
 
         foreach ($this->vote['votes'] as $_ => $choice) {
@@ -189,7 +188,6 @@ class VoteController
             'yes' => $yes,
             'no' => $no,
             'total' => $yes + $no,
-            'playerCnt' => $this->vote['playerCnt'],
         ];
     }
 

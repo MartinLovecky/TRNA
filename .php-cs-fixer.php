@@ -48,6 +48,7 @@ return (new Config())
         'strict_comparison' => true,
         'strict_param' => true,
     ])
+    ->setUnsupportedPhpVersionAllowed(true)
     ->setRiskyAllowed(true)
     ->setFinder($finder)
     ->setCacheFile(__DIR__ . '/.php-cs-fixer.cache')

@@ -25,6 +25,9 @@ namespace Yuha\Trna\Core;
  * @property-read self $gold
  * @property-read self $silver
  * @property-read self $bronze
+ * @property-read self $z
+ * @property-read self $b
+ * @property-read self $i
  */
 class Color
 {
