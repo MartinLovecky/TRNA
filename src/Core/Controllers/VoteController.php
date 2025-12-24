@@ -9,7 +9,7 @@ use Yuha\Trna\Core\Enums\{GameMode, Panel};
 use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Core\Window\WindowRegistry;
 use Yuha\Trna\Infrastructure\Gbx\Client;
-use Yuha\Trna\Repository\{Challange, Players};
+use Yuha\Trna\Repository\{Challenge, Players};
 
 class VoteController
 {
@@ -22,9 +22,9 @@ class VoteController
     private ?array $vote = null;
 
     public function __construct(
-        private Color $color,
+        private Color $c,
         private Client $client,
-        private Challange $challange,
+        private Challenge $challenge,
         private Players $players
     ) {
         $this->initLog('VoteController');
@@ -193,9 +193,9 @@ class VoteController
 
     public function skip(string $initiator): void
     {
-        $gameMode = $this->challange->gameMode();
+        $gameMode = $this->challenge->gameMode();
         $msg = <<<MSG
-            {$this->color->green}Player {$initiator}{$this->color->z->green} skips challenge!
+            {$this->c->green}Player {$initiator}{$this->c->z->green} skips challenge!
         MSG;
         if ($gameMode === GameMode::Cup) {
             $this->client->query('NextChallenge', [true]);

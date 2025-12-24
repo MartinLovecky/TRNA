@@ -12,7 +12,7 @@ use Yuha\Trna\Infrastructure\Gbx\{Client, GbxFetcher};
 use Yuha\Trna\Infrastructure\Tmx\TmxFetcher;
 use Yuha\Trna\Service\Aseco;
 
-class Challange
+class Challenge
 {
     use LoggerAware;
 
@@ -22,7 +22,7 @@ class Challange
         private RepoController $repoController,
         private TmxFetcher $tmxFetcher
     ) {
-        $this->initLog('Challange');
+        $this->initLog('Challenge');
         $this->gbxFetcher->setXml(true);
         $file = $this->getCurrentChallengeInfo()->get('FileName');
         $this->gbxFetcher->processFile(Server::$trackDir . $file);
@@ -100,7 +100,7 @@ class Challange
         $result = $this->repoController->insert(Table::CHALLENGES, $data, $this->gbxFetcher->UId);
 
         if (!$result['ok']) {
-            match($result['reason']) {
+            match ($result['reason']) {
                 // already_exist is not critical information we could $this->logInfo("Challenge data for map: {$this->gbx->UId} already exist")
                 'query_failed'   => $this->logWarning("Couldn't create data for {$this->gbxFetcher->UId} data:", $data),
                 'execute_failed' => $this->logError("Insert execution failed with message: {$result['message']}"),

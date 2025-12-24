@@ -10,7 +10,7 @@ use Yuha\Trna\Core\Enums\{Restart, Status};
 use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Infrastructure\Gbx\{Client, RemoteClient};
 use Yuha\Trna\Plugins\ManiaLinks;
-use Yuha\Trna\Repository\{Challange, Players};
+use Yuha\Trna\Repository\{Challenge, Players};
 use Yuha\Trna\Service\Aseco;
 
 class AppController
@@ -20,9 +20,9 @@ class AppController
     private Status $currStatus = Status::NONE;
 
     public function __construct(
-        private Color $color,
+        private Color $c,
         private Client $client,
-        private Challange $challange,
+        private Challenge $challenge,
         private Players $players,
         private PluginController $pluginController,
     ) {
@@ -93,8 +93,7 @@ class AppController
         $packmask = Server::$packMask;
         $version = Server::$version;
         $build = Server::$build;
-        $gameMode = $this->challange->gameMode();
-        $c = $this->color;
+        $gameMode = $this->challenge->gameMode();
 
         Aseco::consoleText('###############################################################################');
         Aseco::consoleText("  TRNA   : {$version} running on {$ip}:{$port}");
@@ -137,11 +136,10 @@ class AppController
 
     private function onPlayerConnect(TmContainer $cb): void
     {
-        $c = $this->color;
         $this->players->add($cb->get('Login'));
         $player = $this->players->getByLogin($cb->get('Login'));
         $msg = <<<MSG
-            {$c->green}Welcome {$player->get('NickName')}{$c->green}to {$c->white}
+            {$this->c->green}Welcome {$player->get('NickName')} {$this->c->z->green}to {$this->c->white}
         MSG . Server::$name;
 
         $this->client->sendChatMessageToLogin($msg, $player->get('Login'));

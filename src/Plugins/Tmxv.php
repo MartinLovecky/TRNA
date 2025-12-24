@@ -4,20 +4,26 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Plugins;
 
+use Yuha\Trna\Core\{Color, TmContainer};
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
-use Yuha\Trna\Core\TmContainer;
-use Yuha\Trna\Repository\Challange;
-use Yuha\Trna\Service\Aseco;
-use Yuha\Trna\Service\YoutubeClient;
+use Yuha\Trna\Core\Enums\Panel;
+use Yuha\Trna\Core\Window\WindowBuilder;
+use Yuha\Trna\Infrastructure\Gbx\Client;
+use Yuha\Trna\Repository\Challenge;
+use Yuha\Trna\Service\{Aseco, YoutubeClient};
+use Yuha\Trna\Service\Internal\YoutubeSearchResults;
 
 class Tmxv implements DependentPlugin
 {
     private PluginController $pluginController;
-    private array $videos = [];
+    private ?array $videos = null;
 
     public function __construct(
-        private Challange $challange,
+        private Color $c,
+        private Client $client,
+        private Challenge $challenge,
+        private WindowBuilder $windowBuilder,
         private YoutubeClient $youtubeClient
     ) {
     }
@@ -27,24 +33,27 @@ class Tmxv implements DependentPlugin
         $this->pluginController = $pluginController;
     }
 
-    //TODO
+    // ---------- Event Handlers  ----------
+
     public function onNewChallenge(): void
     {
-        $tmx = $this->challange->getTmx();
+        $tmx = $this->challenge->getTmx();
 
         if (isset($tmx->ytlink)) {
-            // isset($tmx->replayurl)
-            // $tmx->replayurl link best replay.gbx if none null
-            // $tmx->ytlink link to youtube video if none null
+            $this->videos = [
+                'title' => $tmx->ytTitle,
+                'link'  => $tmx->ytlink,
+                'publishedAt' => $tmx->publishedAt,
+            ];
             return;
         }
-        // TODO this should be optional
-        $gbx = $this->challange->getGbx();
+
+        $gbx = $this->challenge->getGbx();
         $mapName = Aseco::stripColors($gbx->name);
-        // NOTE: search try find best result for Trackmania videos if none empty
         $search = $this->youtubeClient->search($mapName);
 
         if (!empty($search)) {
+            $this->videos = $this->mapYoutubeResults($search);
         }
     }
 
@@ -62,6 +71,8 @@ class Tmxv implements DependentPlugin
         };
     }
 
+    // ---------- Chat functions  ----------
+
     private function showVideos(TmContainer $player): void
     {
         $this->hasVideos()
@@ -71,19 +82,45 @@ class Tmxv implements DependentPlugin
 
     private function hasVideos(): bool
     {
-        return !empty($this->videos);
+        return \is_array($this->videos);
     }
 
-    private function showWindow()
+    private function showWindow(TmContainer $player): void
     {
+        $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
+
+        $maniaLinks->displayToLogin(
+            Panel::Tmxv->template(),
+            $player->get('Login'),
+            $this->windowBuilder->data(Panel::Tmxv, $player),
+        );
     }
-    private function noVideos(string $login)
+
+    private function noVideos(string $login): void
     {
+        $msg = <<<MSG
+            {$this->c->white}** {$this->c->green}No GPS videos found for this track.
+        MSG;
+        $this->client->sendChatMessageToLogin($msg, $login);
     }
+
     private function handleVideoArgs()
     {
     }
+
     private function help(TmContainer $player)
     {
+    }
+
+    private function mapYoutubeResults(YoutubeSearchResults $res): array
+    {
+        return array_map(
+            static fn (object $videos): array => [
+                'title' => $videos->title,
+                'link'  => $videos->videoLink,
+                'publishedAt' => $videos->publishedAt,
+            ],
+            $res->videos,
+        );
     }
 }
