@@ -8,15 +8,18 @@ use Yuha\Trna\Core\{Color, TmContainer};
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
 use Yuha\Trna\Infrastructure\Gbx\Client;
+use Yuha\Trna\Repository\Challenge;
 
 class Cpll implements DependentPlugin
 {
     private PluginController $pluginController;
+    private int $nbCheckpoints = 0;
     private array $cpll = [];
 
     public function __construct(
         private Color $c,
-        private Client $client
+        private Client $client,
+        private Challenge $challenge,
     ) {
     }
 
@@ -51,10 +54,14 @@ class Cpll implements DependentPlugin
 
     public function onNewChallenge(): void
     {
+        $chall = $this->challenge->getCurrentChallengeInfo();
+        $this->nbCheckpoints = $chall->get('NbCheckpoints');
+        $this->cpll = [];
     }
 
     public function onRestartChallenge(): void
     {
+        $this->cpll = [];
     }
 
     public function onCheckpoint(TmContainer $cb): void

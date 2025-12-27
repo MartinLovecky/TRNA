@@ -23,7 +23,7 @@ final class TmxFetcher
     public ?string $replayurl = null;
     public ?string $ytlink = null;
     public ?string $ytTitle = null;
-    public ?string $publishedAt = null;
+    public ?\DateTimeImmutable $publishedAt = null;
     public ?string $game = null;
     public ?string $pageurl = null;
     public ?string $imageurl = null;

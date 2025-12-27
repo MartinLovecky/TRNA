@@ -16,6 +16,7 @@ use Yuha\Trna\Service\Internal\YoutubeSearchResults;
 
 class Tmxv implements DependentPlugin
 {
+    private const DEFAULT_DATE = '1970-01-01';
     private PluginController $pluginController;
     private ?array $videos = null;
 
@@ -71,6 +72,11 @@ class Tmxv implements DependentPlugin
         };
     }
 
+    public function getVideo(): array
+    {
+        return $this->hasVideos() ? $this->videos : [];
+    }
+
     // ---------- Chat functions  ----------
 
     private function showVideos(TmContainer $player): void
@@ -104,12 +110,56 @@ class Tmxv implements DependentPlugin
         $this->client->sendChatMessageToLogin($msg, $login);
     }
 
-    private function handleVideoArgs()
+    private function handleVideoArgs(TmContainer $player): void
     {
+        match ($player->get('command.arg')) {
+            'list'   => $this->showVideos($player),
+            'latest' => $this->sortAndShowVideos($player, 'latest'),
+            'oldest' => $this->sortAndShowVideos($player, 'oldest'),
+            default  => $this->help($player)
+        };
     }
 
-    private function help(TmContainer $player)
+    private function sortAndShowVideos(TmContainer $player, string $order): void
     {
+        if (!$this->hasVideos()) {
+            $this->noVideos($player->get('Login'));
+            return;
+        }
+
+        $this->sortVideo($order);
+        $this->showVideos($player);
+    }
+
+    private function sortVideo(string $order): void
+    {
+        usort($this->videos, static function ($a, $b) use ($order) {
+            $dateA = $a['PublishedAt'] ?? null;
+            $dateB = $b['PublishedAt'] ?? null;
+
+            $timestampA = $dateA instanceof \DateTimeInterface
+                ? $dateA->getTimestamp()
+                : strtotime($dateA ?? self::DEFAULT_DATE);
+
+            $timestampB = $dateB instanceof \DateTimeInterface
+                ? $dateB->getTimestamp()
+                : strtotime($dateB ?? self::DEFAULT_DATE);
+
+            return $order === 'latest'
+                ? $timestampB <=> $timestampA
+                : $timestampA <=> $timestampB;
+        });
+    }
+
+    private function help(TmContainer $player): void
+    {
+        $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
+
+        $maniaLinks->displayToLogin(
+            Panel::Help->template(),
+            $player->get('Login'),
+            $this->windowBuilder->data(Panel::Help, $player),
+        );
     }
 
     private function mapYoutubeResults(YoutubeSearchResults $res): array
