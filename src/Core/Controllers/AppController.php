@@ -39,6 +39,7 @@ class AppController
     {
         $this->client->query('EnableCallbacks', [true]);
         $this->waitForRunningPlay();
+        $this->challenge->getChallengeFromDB();
         RemoteClient::init($this->client, $_ENV['admin_login']);
     }
 

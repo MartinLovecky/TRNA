@@ -136,9 +136,11 @@ class TmContainer extends ArrayObject implements ContainerInterface
     }
 
     /**
-     * Recursively call a callback on each TmContainer instance.
+     * Recursively execute a callback on this container and all nested containers.
      *
-     * @param  callable(TmContainer $container): void $callback
+     * Intended for side effects only; callback return values are ignored.
+     *
+     * @param  callable(TmContainer): void $callback
      * @return $this
      */
     public function each(callable $callback): static
@@ -152,6 +154,24 @@ class TmContainer extends ArrayObject implements ContainerInterface
         }
 
         return $this;
+    }
+
+    /**
+     * Apply a callback to each direct child and return the results as an array.
+     *
+     * Does not modify the container.
+     *
+     * @template T
+     * @param  callable(mixed): T $callback
+     * @return array<int, T>
+     */
+    public function map(callable $callback): array
+    {
+        $result = [];
+        foreach ($this as $value) {
+            $result[] = $callback($value);
+        }
+        return $result;
     }
 
     /**
@@ -251,8 +271,8 @@ class TmContainer extends ArrayObject implements ContainerInterface
             }
 
             $container[$k] = \is_array($v)
-            ? static::fromArray($v)
-            : $v;
+                ? static::fromArray($v)
+                : $v;
         }
 
         return $container;

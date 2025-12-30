@@ -24,9 +24,10 @@ class Challenge
     ) {
         $this->initLog('Challenge');
         $this->gbxFetcher->setXml(true);
-        $file = $this->getCurrentChallengeInfo()->get('FileName');
+        $file = $this->getCurrentChallengeInfo('FileName');
         $this->gbxFetcher->processFile(Server::$trackDir . $file);
         $this->tmxFetcher->initTmx($this->gbxFetcher->UId);
+        $this->createChallengeInDb();
     }
 
     public function getTmx(): TmxFetcher
@@ -39,7 +40,12 @@ class Challenge
         return $this->gbxFetcher;
     }
 
-    public function getCurrentChallengeInfo(): TmContainer
+    /**
+     * Returns ChallengeInfo as TmContainer or specific value if it exist
+     *
+     * @return mixed returns TmContainer when $path is not set
+     */
+    public function getCurrentChallengeInfo(?string $path = null): mixed
     {
         $c = $this->client->query('GetCurrentChallengeInfo')->get('result');
 
@@ -47,14 +53,41 @@ class Challenge
 
         $c->set('Options', $this->gameInfo());
 
-        return $c;
+        return $path ? $c->get($path) : $c;
     }
 
     public function gameMode(): GameMode
     {
-        $value = $this->getCurrentChallengeInfo()->get('Options.GameMode');
+        $value = $this->getCurrentChallengeInfo('Options.GameMode');
 
         return GameMode::tryFrom($value);
+    }
+
+    /**
+     * Get uids from nextChallengeIndex
+     *
+     * @param  integer      $amount how many to get
+     * @return string|array string when amount is 1
+     */
+    public function getNextUids(int $amount = 1): string|array
+    {
+        $index = $this->client->query('GetNextChallengeIndex')->get('result');
+        $uids = $this->listMaps($amount, $index)->map(static fn (TmContainer $c) => $c->get('UId'));
+
+        return $amount === 1 ? $uids[0] : $uids;
+    }
+
+    public function getChallengeFromDB(?string $uid = null): array
+    {
+        $Uid = $uid ?? $this->getCurrentChallengeInfo('UId');
+        $result = $this->repoController->fetch(Table::CHALLENGES, 'Uid', $Uid);
+
+        if (isset($result['reason'])) {
+            $this->logWarning("Challange: {$Uid} doesn't exist in database please create it first");
+            return [];
+        }
+
+        return $result;
     }
 
     public function listMaps(int $size = 1, int $index = 1): TmContainer
@@ -92,8 +125,8 @@ class Challenge
     {
         $data = [
             'Uid'         => $this->gbxFetcher->UId,
-            'Name'        => $this->gbxFetcher->name,
-            'Author'      => $this->gbxFetcher->author,
+            'Name'        => Aseco::stripColors($this->gbxFetcher->name),
+            'Author'      => Aseco::stripColors($this->gbxFetcher->author),
             'Environment' => $this->gbxFetcher->envir,
         ];
 

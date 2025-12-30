@@ -54,14 +54,13 @@ class Cpll implements DependentPlugin
 
     public function onNewChallenge(): void
     {
-        $chall = $this->challenge->getCurrentChallengeInfo();
-        $this->nbCheckpoints = $chall->get('NbCheckpoints');
-        $this->cpll = [];
+        $this->nbCheckpoints = $this->challenge->getCurrentChallengeInfo('NbCheckpoints');
+        $this->resetCP();
     }
 
     public function onRestartChallenge(): void
     {
-        $this->cpll = [];
+        $this->resetCP();
     }
 
     public function onCheckpoint(TmContainer $cb): void
@@ -76,6 +75,11 @@ class Cpll implements DependentPlugin
 
     public function onChatCommand(TmContainer $player): void
     {
+    }
+
+    private function resetCP(): void
+    {
+        $this->cpll = [];
     }
 
     // ---------- Chat functions  ----------
