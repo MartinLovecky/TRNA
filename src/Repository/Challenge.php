@@ -19,6 +19,7 @@ class Challenge
     public function __construct(
         private Client $client,
         private GbxFetcher $gbxFetcher,
+        private LocalRecord $localRecord,
         private RepoController $repoController,
         private TmxFetcher $tmxFetcher
     ) {
@@ -28,6 +29,7 @@ class Challenge
         $this->gbxFetcher->processFile(Server::$trackDir . $file);
         $this->tmxFetcher->initTmx($this->gbxFetcher->UId);
         $this->createChallengeInDb();
+        $this->localRecord->createRecord($this->gbxFetcher->UId);
     }
 
     public function getTmx(): TmxFetcher
