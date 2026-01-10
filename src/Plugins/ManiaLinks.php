@@ -15,7 +15,6 @@ use Yuha\Trna\Infrastructure\Gbx\Client;
 class ManiaLinks implements DependentPlugin
 {
     use LoggerAware;
-    private const string PATH = 'maniaLinks' . \DIRECTORY_SEPARATOR;
     private const int OUT = 0;
     private PluginController $pluginController;
 
@@ -45,12 +44,12 @@ class ManiaLinks implements DependentPlugin
 
     public function displayToAll(string $winName, array $context, bool $hide = false): void
     {
-        $this->client->sendRenderToAll(self::PATH . $winName, $context, self::OUT, $hide);
+        $this->client->sendRenderToAll($winName, $context, self::OUT, $hide);
     }
 
     public function displayToLogin(string $winName, string $login, array $context, bool $hide = false): void
     {
-        $this->client->sendRenderToLogin($login, self::PATH . $winName, $context, self::OUT, $hide);
+        $this->client->sendRenderToLogin($login, $winName, $context, self::OUT, $hide);
     }
 
     public function closeDisplayToAll(int $id = 1): void

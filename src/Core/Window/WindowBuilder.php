@@ -49,13 +49,14 @@ class WindowBuilder
         $pageData = \array_slice($data, $offset, $rowsPerPage);
 
         return [
-            'data'       => $pageData,
-            'header'     => $panel->name,
-            'totalPages' => $totalPages,
-            'firstPage'  => WindowRegistry::firstAction($panel),
-            'lastPage'   => WindowRegistry::lastAction($panel),
-            'prevPage'   => WindowRegistry::prevAction($panel, $currentPage),
-            'nextPage'   => WindowRegistry::nextAction($panel, $currentPage),
+            'data'        => $pageData,
+            'header'      => $panel->name,
+            'totalPages'  => $totalPages,
+            'currentPage' => $currentPage,
+            'firstPage'   => WindowRegistry::firstAction($panel),
+            'lastPage'    => WindowRegistry::lastAction($panel),
+            'prevPage'    => WindowRegistry::prevAction($panel, $currentPage),
+            'nextPage'    => WindowRegistry::nextAction($panel, $currentPage),
         ];
     }
 

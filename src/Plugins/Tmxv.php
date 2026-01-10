@@ -8,6 +8,7 @@ use Yuha\Trna\Core\{Color, TmContainer};
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
 use Yuha\Trna\Core\Enums\Panel;
+use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Core\Window\WindowBuilder;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
@@ -16,6 +17,7 @@ use Yuha\Trna\Service\Internal\YoutubeSearchResults;
 
 class Tmxv implements DependentPlugin
 {
+    use LoggerAware;
     private const DEFAULT_DATE = '1970-01-01';
     private PluginController $pluginController;
     private ?array $videos = null;
@@ -27,6 +29,7 @@ class Tmxv implements DependentPlugin
         private WindowBuilder $windowBuilder,
         private YoutubeClient $youtubeClient
     ) {
+        $this->initLog('Plugin-Tmxv');
     }
 
     public function setRegistry(PluginController $pluginController): void
@@ -154,11 +157,10 @@ class Tmxv implements DependentPlugin
     private function help(TmContainer $player): void
     {
         $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
-
         $maniaLinks->displayToLogin(
-            Panel::Help->template(),
+            'tmxv/help',
             $player->get('Login'),
-            $this->windowBuilder->data(Panel::Help, $player),
+            $this->windowBuilder->data(Panel::Tmxv, $player),
         );
     }
 

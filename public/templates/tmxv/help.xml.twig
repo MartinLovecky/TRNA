@@ -1,0 +1,30 @@
+{% extends 'layout/help_base.xml.twig' %}
+
+{% block body %}
+
+{# === TABLE HEADERS === #}
+<label posn="-36 27 -27" sizen="22 3" style="TextValueBig" text="Command"/>
+<label posn="-12 27 -27" sizen="46 3" style="TextValueBig" text="Description"/>
+
+<quad posn="-38 26 -27" sizen="76 0.2" style="Bgs1" substyle="BgList"/>
+
+{# === TABLE ROWS === #}
+{% set startY = 24 %}
+{% set rowHeight = 4 %}
+
+{% for row in data %}
+    <label
+        posn="-36 {{ startY - (loop.index0 * rowHeight) }} -27"
+        sizen="22 2.8"
+        style="TextValueSmall"
+        text="$fff{{ row.command|xml_escape }}"
+    />
+    <label
+        posn="-12 {{ startY - (loop.index0 * rowHeight) }} -27"
+        sizen="46 2.8"
+        style="TextValueSmall"
+        text="$ccc{{ row.description|xml_escape }}"
+    />
+{% endfor %}
+
+{% endblock %}

@@ -38,7 +38,8 @@ class RaspJukebox implements DependentPlugin
 
     public function onNewChallenge(): void
     {
-        $this->displayTest();
+        // TODO
+        //$this->displayTest();
     }
 
     public function onChatCommand(TmContainer $player): void

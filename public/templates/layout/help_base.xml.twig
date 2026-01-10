@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manialink id="{{ manialink_id|default(1) }}">
   <frame posn="0 0 0">
-    {# === BASE HELP TEMPLATE === #}
     {# === HEADER === #}
     <quad posn="-40 39.4 -32" sizen="80 9.3" style="BgsPlayerCard" substyle="BgPlayerName"/>
-    <quad posn="-38.4 38.1 -31" sizen="8 7" style="Icons64x64_1" substyle="{{ header_icon|default('TrackInfo') }}"/>
-    <label posn="-30.3 37.2 -31" sizen="60 7.2" style="TextRaceChronoWarning" text="{{ header|default('Default Header')|xml_escape }}"/>
-    <label posn="36 36.1 -30" sizen="8 7.8" halign="right" style="TextValueBig" text="$ff0{{ page_info.current }}/{{ total_pages }}"/>
+    <quad posn="-38.4 38.1 -31" sizen="8 7" style="Icons64x64_1" substyle="TrackInfo"/>
+    <label posn="-30.3 37.2 -31" sizen="60 7.2" style="TextRaceChronoWarning" text="{{ header|default('Help')|xml_escape }}"/>
+    <label posn="36 36.1 -30" sizen="8 7.8" halign="right" style="TextValueBig" text="$ff0{{ currentPage }}/{{ totalPages }}"/>
 
     {# === BODY BACKGROUND === #}
     <quad posn="-40 30 -29" sizen="80 60" style="Bgs1InRace" substyle="BgCard3"/>
     <quad posn="-39 29 -28" sizen="78 58" style="Bgs1" substyle="BgList"/>
 
-    {# === BODY BLOCK (child templates override this) === #}
+    {# === BODY CONTENT === #}
     {% block body %}{% endblock %}
 
     {# === FOOTER === #}
@@ -21,12 +20,12 @@
 
     {# === Pagination === #}
     <quad posn="-37 -31.9 -31" sizen="5 5" style="Icons64x64_1" substyle="ArrowFirst"
-          {% if total_pages > 1 and page_info.current > 1 %}action="{{ firstAction }}"{% endif %}/>
+          {% if totalPages > 1 and currentPage > 1 %}action="{{ firstPage }}"{% endif %}/>
     <quad posn="-28 -31.9 -31" sizen="5 5" style="Icons64x64_1" substyle="ArrowPrev"
-          {% if total_pages > 1 and page_info.current > 1 %}action="{{ prevAction }}"{% endif %}/>
+          {% if totalPages > 1 and currentPage > 1 %}action="{{ prevPage }}"{% endif %}/>
     <quad posn="21 -31.9 -31" sizen="5 5" style="Icons64x64_1" substyle="ArrowNext"
-          {% if total_pages > 1 and page_info.current < total_pages %}action="{{ nextAction }}"{% endif %}/>
+          {% if totalPages > 1 and currentPage < totalPages %}action="{{ nextPage }}"{% endif %}/>
     <quad posn="30 -31.9 -31" sizen="5 5" style="Icons64x64_1" substyle="ArrowLast"
-          {% if total_pages > 1 and page_info.current < total_pages %}action="{{ lastAction }}"{% endif %}/>
+          {% if totalPages > 1 and currentPage < totalPages %}action="{{ lastPage }}"{% endif %}/>
   </frame>
 </manialink>
