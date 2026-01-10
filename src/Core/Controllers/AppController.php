@@ -39,7 +39,6 @@ class AppController
     {
         $this->client->query('EnableCallbacks', [true]);
         $this->waitForRunningPlay();
-        $this->challenge->getChallengeFromDB();
         RemoteClient::init($this->client, $_ENV['admin_login']);
     }
 
@@ -64,8 +63,6 @@ class AppController
                 EventLoop::cancel($id);
                 EventLoop::queue(function () {
                     $this->syncServer();
-                    $this->sendHeader();
-                    $this->newChallenge();
                 });
                 return;
             }
@@ -83,6 +80,10 @@ class AppController
             $this->client->query('GetServerPackMask')->get('result'),
             $this->client->query('GetServerOptions')->get('result'),
         );
+
+        $this->pluginController->invokeAllMethods('onSync');
+        $this->sendHeader();
+        $this->newChallenge();
     }
 
     private function sendHeader(): void
@@ -164,31 +165,31 @@ class AppController
 
     private function handleChatMessage(TmContainer $player, string $message): void
     {
-        $message = trim($message);
-        $cmdName = '';
-        $cmdParam = '';
-        $cmdArg = '';
+        $message   = trim($message);
+        $action    = '';
+        $modifier  = '';
+        $parameter = '';
 
+        // +, ++, +++, -, --, ---
         if (preg_match('/^([+-]+)(?:\s+(.*))?$/', $message, $m)) {
-            // +, ++, +++, -, --, ---
             $signs = $m[1];
             $count = \strlen($signs);
             $type  = $signs[0] === '+' ? 'plus' : 'minus';
             // plus1, plus2 ...
-            $cmdName = $type . $count;
+            $action = $type . $count;
         } elseif (str_starts_with($message, '/')) {
             $parts = preg_split('/\s+/', substr($message, 1), 3);
-            $cmdName  = strtolower($parts[0] ?? '');
-            $cmdParam = strtolower($parts[1] ?? '');
-            $cmdArg   = strtolower($parts[2] ?? '');
+            $action  = strtolower($parts[0] ?? '');
+            $modifier = strtolower($parts[1] ?? '');
+            $parameter   = strtolower($parts[2] ?? '');
         } else {
             return; // Not a command
         }
 
         $player->setMultiple([
-            'command.name'  => $cmdName,
-            'command.param' => $cmdParam,
-            'command.arg'   => $cmdArg,
+            'cmd.action'  => $action,
+            'cmd.mod'     => $modifier,
+            'cmd.param'   => $parameter,
         ]);
 
         $this->pluginController->invokeAllMethods('onChatCommand', $player);
@@ -206,6 +207,7 @@ class AppController
 
     private function onBeginRound(): void
     {
+        $this->logDebug('onBeginRound' . date("Y-m-d H:i:s"));
         $this->pluginController->invokeAllMethods('onBeginRound');
     }
 
@@ -214,12 +216,14 @@ class AppController
         $this->pluginController->invokeAllMethods('onEndRound');
     }
 
-    private function gameStatusChanged(TmContainer $cb)
+    private function gameStatusChanged(TmContainer $cb): void
     {
+        $this->logDebug('gameStatusChanged' . date("Y-m-d H:i:s"), $cb->toArray());
     }
 
-    private function newChallenge()
+    private function newChallenge(): void
     {
+        $this->logDebug('onBeginRound' . date("Y-m-d H:i:s"));
         $this->pluginController->invokeAllMethods('onNewChallenge');
     }
 

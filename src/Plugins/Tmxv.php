@@ -61,11 +61,11 @@ class Tmxv implements DependentPlugin
     public function onChatCommand(TmContainer $player): void
     {
         //NOTE: we could create Enum similar as RaspVotes
-        if ($player->get('command.name') !== 'tmxv') {
+        if ($player->get('cmd.action') !== 'tmxv') {
             return;
         }
 
-        match ($player->get('command.param')) {
+        match ($player->get('cmd.mod')) {
             'videos'        => $this->showVideos($player),
             'video', 'gps'  => $this->handleVideoArgs($player),
             default         => $this->help($player)
@@ -112,7 +112,7 @@ class Tmxv implements DependentPlugin
 
     private function handleVideoArgs(TmContainer $player): void
     {
-        match ($player->get('command.arg')) {
+        match ($player->get('cmd.param')) {
             'list'   => $this->showVideos($player),
             'latest' => $this->sortAndShowVideos($player, 'latest'),
             'oldest' => $this->sortAndShowVideos($player, 'oldest'),

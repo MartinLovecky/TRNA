@@ -6,7 +6,7 @@ use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
 
 $finder = Finder::create()
     ->in(__DIR__)
-    ->exclude('vendor');
+    ->exclude('vendor', 'public');
 
 return (new Config())
     ->setRules([

@@ -3,6 +3,7 @@
 
 # Ignore vendor folder
 vendor/
+logs/
 
 # Ignore specific dotfiles
 .env

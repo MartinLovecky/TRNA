@@ -34,7 +34,7 @@ class RaspVotes implements DependentPlugin
 
     public function onChatCommand(TmContainer $player): void
     {
-        $votes = Votes::tryFrom($player->get('command.name'));
+        $votes = Votes::tryFrom($player->get('cmd.action'));
 
         if (!$votes) {
             return; // irelevant chat command for this class

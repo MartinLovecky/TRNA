@@ -36,11 +36,11 @@ class Track implements DependentPlugin
 
     public function onChatCommand(TmContainer $player): void
     {
-        if ($player->get('command.name') !== 'track') {
+        if ($player->get('cmd.action') !== 'track') {
             return;
         }
 
-        match ($player->get('command.param')) {
+        match ($player->get('cmd.mod')) {
             'playtime' => $this->playtime($player->get('Login')),
             'time'     => $this->showtime($player->get('Login')),
             'track'    => $this->trackinfo($player->get('Login')),

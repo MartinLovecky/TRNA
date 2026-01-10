@@ -18,7 +18,7 @@ final class TmxFetcher
     public ?int $replayid = null;
     public ?int $lbrating = null;
     public ?bool $visible = null;
-
+    public string $uid = '';
     public string $acomment = '';
     public ?string $replayurl = null;
     public ?string $ytlink = null;
@@ -51,6 +51,7 @@ final class TmxFetcher
 
     public function initTmx(string $uid): void
     {
+        $this->uid = $uid;
         $fields = $this->httpClient->get(self::TMXURI, [
             'action' => 'apitrackinfo',
             'uid'   => $uid,

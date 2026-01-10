@@ -9,6 +9,7 @@ use Yuha\Trna\Plugins\Cpll;
 use Yuha\Trna\Plugins\Dedimania;
 use Yuha\Trna\Plugins\Karma;
 use Yuha\Trna\Plugins\ManiaLinks;
+use Yuha\Trna\Plugins\RaspJukebox;
 use Yuha\Trna\Plugins\RaspVotes;
 use Yuha\Trna\Plugins\Tmxv;
 use Yuha\Trna\Plugins\Track;
@@ -23,17 +24,19 @@ class PluginController
         private Dedimania $dedimania,
         private Karma $karma,
         private ManiaLinks $maniaLinks,
+        private RaspJukebox $raspJukebox,
         private RaspVotes $raspVotes,
         private Tmxv $tmxv,
         private Track $track,
     ) {
         $this->plugins = [
-            Cpll::class       => $this->cpll,
-            Dedimania::class  => $this->dedimania,
-            ManiaLinks::class => $this->maniaLinks,
-            RaspVotes::class  => $this->raspVotes,
-            Tmxv::class       => $this->tmxv,
-            Track::class      => $this->track,
+            Cpll::class        => $this->cpll,
+            Dedimania::class   => $this->dedimania,
+            ManiaLinks::class  => $this->maniaLinks,
+            RaspJukebox::class => $this->raspJukebox,
+            RaspVotes::class   => $this->raspVotes,
+            Tmxv::class        => $this->tmxv,
+            Track::class       => $this->track,
         ];
 
         foreach ($this->plugins as $plugin) {

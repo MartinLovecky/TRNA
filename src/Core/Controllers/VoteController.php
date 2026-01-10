@@ -66,8 +66,8 @@ class VoteController
             'votes'           => [],
             'choice'          => 'none',
             'header'          => "{$panel->name} vote",
-            'param'           => $player->get('command.param'),
-            'arg'             => $player->get('command.arg'),
+            'param'           => $player->get('cmd.mod'),
+            'arg'             => $player->get('cmd.param'),
         ];
 
         $rem = (int) ceil(max(0, self::DURATION - (microtime(true) - $this->vote['startedAt'])));
