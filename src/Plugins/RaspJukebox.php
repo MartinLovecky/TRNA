@@ -38,7 +38,7 @@ class RaspJukebox implements DependentPlugin
 
     public function onNewChallenge(): void
     {
-        // TODO
+        // TODO : DISPLAY BOX WITH CNT OF all maps and display window on click
         //$this->displayTest();
     }
 
@@ -59,7 +59,7 @@ class RaspJukebox implements DependentPlugin
 
             return;
         }
-        // TODO: this should only happen on p
+        // TODO: this should only happen on /list $p int|string
 
         //map doesnt exist on tmx or invalid input inside $arg
         if (!\in_array($arg, $posibleResults, true)) {

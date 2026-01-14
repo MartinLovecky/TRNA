@@ -30,7 +30,7 @@ class WindowBuilder
     {
         if (!WindowRegistry::has($panel)) {
             $this->logDebug("Window Registry doesn't have $panel->name");
-            return []; // NON EXISTEND PANEL should not happen
+            return []; // should not happen
         }
 
         $totalPages = WindowRegistry::getTotalPages($panel);

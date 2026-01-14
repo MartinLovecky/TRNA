@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yuha\Trna\Core;
 
 /**
+ * @property-read self $aqua
  * @property-read self $white
  * @property-read self $yellow
  * @property-read self $red
@@ -32,16 +33,17 @@ namespace Yuha\Trna\Core;
 class Color
 {
     private array $map = [
+        'aqua'        => '0ff',
         'white'       => '$fff',
         'yellow'      => '$ff0',
         'red'         => '$f00',
         'gray'        => '$888',
         'darkGray'    => '$bbb',
         'black'       => '$000',
-        'green'       => '$0f3',
+        'green'       => '$080',
         'orange'      => '$fa0',
         'brown'       => '$d80',
-        'blue'        => '$39f',
+        'blue'        => '$00f',
         'lightYellow' => '$ff3',
         'pink'        => '$f8f',
         'magenta'     => '$f0f',

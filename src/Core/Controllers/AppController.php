@@ -223,7 +223,7 @@ class AppController
 
     private function newChallenge(): void
     {
-        $this->logDebug('onBeginRound' . date("Y-m-d H:i:s"));
+        $this->logDebug('onNewChallenge' . date("Y-m-d H:i:s"));
         $this->pluginController->invokeAllMethods('onNewChallenge');
     }
 

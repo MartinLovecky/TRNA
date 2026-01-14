@@ -101,10 +101,8 @@ class VoteController
         $status = $this->status();
         $playerCount = $this->players->playerCount();
 
-        // REVIEW for one player hnadled on startvote so this should not happen
-        // but if player disconects I am not sure
+        // REVIEW: propably not needed chceck since if not_enough_players skips map directly without window
         if ($playerCount < self::MIN_PLAYERS) {
-            //FAILED no enough players cancel vote send message
             $this->vote = null;
             return;
         }
@@ -113,7 +111,8 @@ class VoteController
         $yesPercent = $playerCount > 0 ? ($yes / $playerCount) : 0;
 
         if ($yesPercent <= self::REQUIRED_PERCENT) {
-            //FAILED not enough yes votes cancel vote send message
+            $this->client->sendChatMessageToAll("Not enough yes votes to skip map");
+            //NOTE: this happens after duration so window shoudl be closed but check actual behaviour
             $this->vote = null;
             return;
         }
@@ -199,7 +198,7 @@ class VoteController
         MSG;
         if ($gameMode === GameMode::Cup) {
             $this->client->query('NextChallenge', [true]);
-            $this->client->sendChatMessageToAll('');
+            $this->client->sendChatMessageToAll($msg);
         }
         $this->client->query('NextChallenge');
         $this->client->sendChatMessageToAll($msg);

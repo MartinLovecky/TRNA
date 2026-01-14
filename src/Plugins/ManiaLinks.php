@@ -83,7 +83,7 @@ class ManiaLinks implements DependentPlugin
             $this->voteController->update($player, $choice);
             return ActionResult::Handled;
         } elseif (($choice === 'cancel' || $choice === 'pass') && $player->get('isAdmin')) {
-            return ActionResult::NotHandled; //TODO
+            return ActionResult::NotHandled; //TODO SPLIT CANCEL / PASS
         } elseif ($choice === 'close') {
             $this->voteController->update($player, $choice);
             return ActionResult::Closed;

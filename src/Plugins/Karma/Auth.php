@@ -74,7 +74,7 @@ class Auth
         Aseco::updateEnvFile('authcode', $output->get('authcode'));
 
         if (!$output->get('import_done')) {
-            // TODO:
+            // TODO: IMPORT DATA
             return ['ok' => true];
         }
 
