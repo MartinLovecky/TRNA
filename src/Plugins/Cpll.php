@@ -8,9 +8,10 @@ use Yuha\Trna\Core\{Color, TmContainer};
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
 use Yuha\Trna\Core\Enums\Panel;
-use Yuha\Trna\Core\Window\WindowBuilder;
+use Yuha\Trna\Core\Window\Window;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
+use Yuha\Trna\Service\Aseco;
 
 class Cpll implements DependentPlugin
 {
@@ -24,7 +25,7 @@ class Cpll implements DependentPlugin
         private Color $c,
         private Client $client,
         private Challenge $challenge,
-        private WindowBuilder $windowBuilder,
+        private Window $window,
     ) {
     }
 
@@ -142,8 +143,31 @@ class Cpll implements DependentPlugin
         }
 
         uasort($this->cpll, static fn ($a, $b) => $a['cp'] <=> $b['cp']);
-        //TODO: check what this even does in original
 
+        $data = ['CP', 'Time', 'Player'];
+        $mycp = $this->cpll[$player->get('Login')]['cp'];
+        $ctr = 1;
+
+        foreach ($this->cpll as $_ => $val) {
+            if ($isMyCp && $mycp !== $val['cp']) {
+                continue;
+            }
+            $data[] = [
+                $val['cp'],
+                Aseco::getFormattedTime($val['time']),
+                $player->get('NickName'),
+            ];
+            if ($ctr++ % 10 === 0 && $ctr < \count($this->cpll)) {
+                $data = ['CP', 'Time', 'Player'];
+            }
+        }
+
+        $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
+        $maniaLinks->displayToLogin(
+            'win', //TODO create window
+            $player->get('Login'),
+            $data,
+        );
     }
 
     private function help(TmContainer $player): void
@@ -152,7 +176,7 @@ class Cpll implements DependentPlugin
         $maniaLinks->displayToLogin(
             'tmxv/help',
             $player->get('Login'),
-            $this->windowBuilder->data(Panel::Cpll, $player),
+            $this->window->build(Panel::Cpll, $player),
         );
     }
 

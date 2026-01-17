@@ -139,6 +139,7 @@ class AppController
     private function onPlayerConnect(TmContainer $cb): void
     {
         $this->players->add($cb->get('Login'));
+        $this->logInfo('Connected player:', $cb->toArray());
         $player = $this->players->getByLogin($cb->get('Login'));
         $msg = <<<MSG
             {$this->c->green}Welcome {$player->get('NickName')} {$this->c->z->green}to {$this->c->white}
@@ -207,7 +208,7 @@ class AppController
 
     private function onBeginRound(): void
     {
-        $this->logDebug('onBeginRound' . date("Y-m-d H:i:s"));
+        $this->logDebug('onBeginRound ' . date("Y-m-d H:i:s"));
         $this->pluginController->invokeAllMethods('onBeginRound');
     }
 
@@ -218,12 +219,12 @@ class AppController
 
     private function gameStatusChanged(TmContainer $cb): void
     {
-        $this->logDebug('gameStatusChanged' . date("Y-m-d H:i:s"), $cb->toArray());
+        $this->logDebug('gameStatusChanged ' . date("Y-m-d H:i:s"), $cb->toArray());
     }
 
     private function newChallenge(): void
     {
-        $this->logDebug('onNewChallenge' . date("Y-m-d H:i:s"));
+        $this->logDebug('onNewChallenge ' . date("Y-m-d H:i:s"));
         $this->pluginController->invokeAllMethods('onNewChallenge');
     }
 

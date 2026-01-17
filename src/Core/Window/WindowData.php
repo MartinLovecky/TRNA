@@ -45,39 +45,64 @@ class WindowData
     private function trackHelp(): array
     {
         return [
-            ['command' => '/track',   'description' => 'Track commands must start with /track'],
-            ['command' => 'playtime', 'description' => 'Check your playtime statistics'],
-            ['command' => 'time',     'description' => 'Check current server time'],
-            ['command' => 'info',     'description' => 'Get information about the current map'],
-            ['command' => 'help',     'description' => 'Show this help menu'],
+            ['cmd' => '/track',   'des' => 'Track commands must start with /track'],
+            ['cmd' => 'playtime', 'des' => 'Check your playtime statistics'],
+            ['cmd' => 'time',     'des' => 'Check current server time'],
+            ['cmd' => 'info',     'des' => 'Get information about the current map'],
+            ['cmd' => 'help',     'des' => 'Show this help menu'],
+            ///
+            ['cmd' => '/tmxv',       'des' => 'Tmxv commands must start with /tmxv'],
+            ['cmd' => 'help',        'des' => 'Show this help menu'],
+            ['cmd' => 'video',       'des' => 'Same as gps'],
+            ['cmd' => 'videos',      'des' => 'Same as gps list'],
+            ['cmd' => 'gps',         'des' => 'Gives the latest video in chat'],
+            ['cmd' => '-||- list',   'des' => 'Gives all videos in a window'],
+            ['cmd' => '-||- latest', 'des' => 'Gives the latest video in chat'],
+            ['cmd' => '-||- oldest', 'des' => 'Gives the oldest video in chat'],
+            ['cmd' => '/tmxv',       'des' => 'Tmxv commands must start with /tmxv'],
+            ['cmd' => 'help',        'des' => 'Show this help menu'],
+            ['cmd' => 'video',       'des' => 'Same as gps'],
+            ['cmd' => 'videos',      'des' => 'Same as gps list'],
+            ['cmd' => 'gps',         'des' => 'Gives the latest video in chat'],
+            ['cmd' => '-||- list',   'des' => 'Gives all videos in a window'],
+            ['cmd' => '-||- latest', 'des' => 'Gives the latest video in chat'],
+            ['cmd' => '-||- oldest', 'des' => 'Gives the oldest video in chat'],
+            ['cmd' => '/tmxv',       'des' => 'Tmxv commands must start with /tmxv'],
+            ['cmd' => 'help',        'des' => 'Show this help menu'],
+            ['cmd' => 'video',       'des' => 'Same as gps'],
+            ['cmd' => 'videos',      'des' => 'Same as gps list'],
+            ['cmd' => 'gps',         'des' => 'Gives the latest video in chat'],
+            ['cmd' => '-||- list',   'des' => 'Gives all videos in a window'],
+            ['cmd' => '-||- latest', 'des' => 'Gives the latest video in chat'],
+            ['cmd' => '-||- oldest', 'des' => 'Gives the oldest video in chat'],
         ];
     }
 
     private function tmxvHelp(): array
     {
         return [
-            ['command' => '/tmxv',       'description' => 'Tmxv commands must start with /tmxv'],
-            ['command' => 'help',        'description' => 'Show this help menu'],
-            ['command' => 'video',       'description' => 'Same as gps'],
-            ['command' => 'videos',      'description' => 'Same as gps list'],
-            ['command' => 'gps',         'description' => 'Gives the latest video in chat'],
-            ['command' => '-||- list',   'description' => 'Gives all videos in a window'],
-            ['command' => '-||- latest', 'description' => 'Gives the latest video in chat'],
-            ['command' => '-||- oldest', 'description' => 'Gives the oldest video in chat'],
+            ['cmd' => '/tmxv',       'des' => 'Tmxv commands must start with /tmxv'],
+            ['cmd' => 'help',        'des' => 'Show this help menu'],
+            ['cmd' => 'video',       'des' => 'Same as gps'],
+            ['cmd' => 'videos',      'des' => 'Same as gps list'],
+            ['cmd' => 'gps',         'des' => 'Gives the latest video in chat'],
+            ['cmd' => '-||- list',   'des' => 'Gives all videos in a window'],
+            ['cmd' => '-||- latest', 'des' => 'Gives the latest video in chat'],
+            ['cmd' => '-||- oldest', 'des' => 'Gives the oldest video in chat'],
         ];
     }
 
     private function cpllHelp(): array
     {
         return [
-            ['command' => '/cpll',        'description' => 'CPLL commands must start with /cpll'],
-            ['command' => 'help',         'description' => 'Show this help menu'],
-            ['command' => 'cp',           'description' => 'Show current checkpoint live list'],
-            ['command' => 'mycp',         'description' => 'Show your current checkpoint status'],
-            ['command' => 'on',           'description' => '[Admin] Enable CPLL'],
-            ['command' => 'off',          'description' => '[Admin] Disable CPLL'],
-            ['command' => 'filter on',    'description' => '[Admin] Hide spectators from the list'],
-            ['command' => 'filter off',   'description' => '[Admin] Show spectators in the list'],
+            ['cmd' => '/cpll',        'des' => 'CPLL commands must start with /cpll'],
+            ['cmd' => 'help',         'des' => 'Show this help menu'],
+            ['cmd' => 'cp',           'des' => 'Show current checkpoint live list'],
+            ['cmd' => 'mycp',         'des' => 'Show your current checkpoint status'],
+            ['cmd' => 'on',           'des' => '[Admin] Enable CPLL'],
+            ['cmd' => 'off',          'des' => '[Admin] Disable CPLL'],
+            ['cmd' => 'filter on',    'des' => '[Admin] Hide spectators from the list'],
+            ['cmd' => 'filter off',   'des' => '[Admin] Show spectators in the list'],
         ];
     }
 }

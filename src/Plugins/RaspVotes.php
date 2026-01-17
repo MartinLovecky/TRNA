@@ -10,7 +10,7 @@ use Yuha\Trna\Core\Controllers\{PluginController, VoteController};
 use Yuha\Trna\Core\Enums\{Panel, Votes};
 use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Core\Window\WindowBuilder;
+use Yuha\Trna\Core\Window\Window;
 
 class RaspVotes implements DependentPlugin
 {
@@ -19,7 +19,7 @@ class RaspVotes implements DependentPlugin
 
     public function __construct(
         private VoteController $voteController,
-        private WindowBuilder $windowBuilder
+        private Window $window
     ) {
         $this->initLog('RaspVotes');
     }
@@ -84,8 +84,8 @@ class RaspVotes implements DependentPlugin
             // when closed do not display again
             if ($status['choice'] !== 'close') {
                 $maniaLinks->displayToAll(
-                    $panel->template(),
-                    $this->windowBuilder->data($panel, $player),
+                    '',
+                    $this->window->build($panel, $player),
                 );
             }
 

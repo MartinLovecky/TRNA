@@ -48,8 +48,8 @@ class VoteController
         }
 
         $actions = [];
-        foreach ($panel->choices() as $key => $value) {
-            $actions[$key] = WindowRegistry::encode($panel, $value);
+        foreach ($panel->choices() as $key => $_) {
+            $actions[$key] = WindowRegistry::choice($panel, $key);
         }
 
         $player->set("{$panel->name}.vote", 'none');
@@ -198,9 +198,9 @@ class VoteController
         MSG;
         if ($gameMode === GameMode::Cup) {
             $this->client->query('NextChallenge', [true]);
-            $this->client->sendChatMessageToAll($msg);
+        } else {
+            $this->client->query('NextChallenge');
         }
-        $this->client->query('NextChallenge');
         $this->client->sendChatMessageToAll($msg);
     }
 }

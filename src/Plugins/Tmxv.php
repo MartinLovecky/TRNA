@@ -9,7 +9,7 @@ use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
 use Yuha\Trna\Core\Enums\Panel;
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Core\Window\WindowBuilder;
+use Yuha\Trna\Core\Window\Window;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
 use Yuha\Trna\Service\{Aseco, YoutubeClient};
@@ -26,7 +26,7 @@ class Tmxv implements DependentPlugin
         private Color $c,
         private Client $client,
         private Challenge $challenge,
-        private WindowBuilder $windowBuilder,
+        private Window $window,
         private YoutubeClient $youtubeClient
     ) {
         $this->initLog('Plugin-Tmxv');
@@ -99,9 +99,9 @@ class Tmxv implements DependentPlugin
         $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
 
         $maniaLinks->displayToLogin(
-            Panel::Tmxv->template(),
+            '',
             $player->get('Login'),
-            $this->windowBuilder->data(Panel::Tmxv, $player),
+            $this->window->build(Panel::Tmxv, $player),
         );
     }
 
@@ -160,7 +160,7 @@ class Tmxv implements DependentPlugin
         $maniaLinks->displayToLogin(
             'tmxv/help',
             $player->get('Login'),
-            $this->windowBuilder->data(Panel::Tmxv, $player),
+            $this->window->build(Panel::Tmxv, $player),
         );
     }
 

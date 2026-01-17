@@ -16,7 +16,7 @@ class RaspJukebox implements DependentPlugin
 {
     use LoggerAware;
     private PluginController $pluginController;
-    private const string WIN = 'hud' . \DIRECTORY_SEPARATOR;
+    private const string WIN = 'jukebox' . \DIRECTORY_SEPARATOR;
 
     public function __construct(
         private Client $client,
@@ -48,9 +48,15 @@ class RaspJukebox implements DependentPlugin
             return; // not jukebox action
         }
 
-        $param = $player->get('cmd.mod');   // jb, best, worst, nofin, p [param]
+        $mod = $player->get('cmd.mod');   // jb, best, worst, nofin, p [param]
         $arg   = $player->get('cmd.param');
-
+        $this->logDebug('cmd', [$mod, $arg, $player->get('Login')]);
+        $this->displayTest($player->get('Login'));
+        return;
+        if (!isset($mod)) {
+            $this->displayTest();
+            return;
+        }
         $tmx = $this->challenge->getTmx();
         $posibleResults = [$tmx->id, $tmx->author, $tmx->uid];
 
@@ -60,18 +66,14 @@ class RaspJukebox implements DependentPlugin
             return;
         }
         // TODO: this should only happen on /list $p int|string
-
-        //map doesnt exist on tmx or invalid input inside $arg
-        if (!\in_array($arg, $posibleResults, true)) {
-            $this->client->sendChatMessageToLogin("Invalid input {$arg} or not on tmx", $player->get('Login'));
-        }
     }
 
-    public function displayTest(): void
+    public function displayTest(string $login): void
     {
         $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
 
         //TODO (yuha) design Jukebox window
-        $maniaLinks->displayToAll(self::WIN . 'testBox', []);
+        $win = self::WIN . 'test';
+        $maniaLinks->displayToLogin($win, $login, []);
     }
 }

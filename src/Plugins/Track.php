@@ -8,7 +8,7 @@ use Yuha\Trna\Core\{Color, Server, TmContainer};
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
 use Yuha\Trna\Core\Enums\{GameMode, Panel};
-use Yuha\Trna\Core\Window\WindowBuilder;
+use Yuha\Trna\Core\Window\Window;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
 use Yuha\Trna\Service\Aseco;
@@ -23,7 +23,7 @@ class Track implements DependentPlugin
         private Color $c,
         private Client $client,
         private Challenge $challenge,
-        private WindowBuilder $windowBuilder
+        private Window $window
     ) {
     }
 
@@ -138,7 +138,7 @@ class Track implements DependentPlugin
         $maniaLinks->displayToLogin(
             'tmxv/help',
             $player->get('Login'),
-            $this->windowBuilder->data(Panel::Help, $player),
+            $this->window->build(Panel::Track, $player),
         );
     }
 

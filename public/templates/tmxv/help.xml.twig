@@ -17,13 +17,13 @@
         posn="-36 {{ startY - (loop.index0 * rowHeight) }} -27"
         sizen="22 2.8"
         style="TextValueSmall"
-        text="$fff{{ row.command|xml_escape }}"
+        text="$fff{{ row.cmd|xml_escape }}"
     />
     <label
         posn="-12 {{ startY - (loop.index0 * rowHeight) }} -27"
         sizen="46 2.8"
         style="TextValueSmall"
-        text="$ccc{{ row.description|xml_escape }}"
+        text="$ccc{{ row.des|xml_escape }}"
     />
 {% endfor %}
 

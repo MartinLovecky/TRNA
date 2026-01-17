@@ -6,10 +6,10 @@ namespace Yuha\Trna\Plugins;
 
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\{PluginController, VoteController};
-use Yuha\Trna\Core\Enums\{ActionResult, Panel};
+use Yuha\Trna\Core\Enums\{ActionKind, Panel};
 use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Core\Window\WindowRegistry;
+use Yuha\Trna\Core\Window\{ActionCodec, ActionContext, Window};
 use Yuha\Trna\Infrastructure\Gbx\Client;
 
 class ManiaLinks implements DependentPlugin
@@ -20,7 +20,8 @@ class ManiaLinks implements DependentPlugin
 
     public function __construct(
         private Client $client,
-        private VoteController $voteController
+        private VoteController $voteController,
+        private Window $window
     ) {
         $this->initLog('Plugin-ManiaLinks');
     }
@@ -30,16 +31,17 @@ class ManiaLinks implements DependentPlugin
         $this->pluginController = $pluginController;
     }
 
-    public function onAnswer(TmContainer $player)
+    public function onAnswer(TmContainer $player): void
     {
-        try {
-            [$panel, $currentAction] = WindowRegistry::decode($player->get('encodedAction'));
-            $player->set("{$panel->name}.currentPage", $currentAction);
-        } catch (\Throwable $th) {
-            return $th->getMessage();
-        }
+        $context = ActionCodec::decode($player->get('encodedAction'));
 
-        $res = $this->handleAction($player, $panel);
+        match ($context->kind) {
+            ActionKind::Page   => $this->handlePageAction($player, $context),
+            ActionKind::Choice => $this->handleChoiceAction($player, $context),
+            ActionKind::Close  => $this->handleCloseAction($player, $context),
+            ActionKind::Chat   => $this->logDebug('Chat actions not supported', $context->toArray()),
+            default => $this->logDebug("Unexpected context:", $context->toArray())
+        };
     }
 
     public function displayToAll(string $winName, array $context, bool $hide = false): void
@@ -62,33 +64,31 @@ class ManiaLinks implements DependentPlugin
         $this->client->sendXmlToLogin($login, "<manialink id='{$id}'></manialink>");
     }
 
-    private function handleAction(TmContainer $player, Panel $panel): void
+    private function handlePageAction(TmContainer $player, ActionContext $context): void
     {
-        $choice = $panel->choiceName($player->get("{$panel->name}.currentPage"));
-        $result = match ($panel) {
-            Panel::Skip, Panel::Replay => $this->action($player, $choice),
-            default => ActionResult::NoAction,
-        };
-
-        match ($result) {
-            ActionResult::Closed     => $this->closeDisplayToLogin($player->get('Login'), $panel->value),
-            ActionResult::NotHandled => $this->logWarning("Manialink {$panel->name} action: {$choice} not handled: private function action(TmContainer \$player, string \$choice = 'none')"),
-            default => null,
-        };
+        $player->set("{$context->panel->name}.currentPage", $context->val);
+        $winData = $this->window->build($context->panel, $player);
+        $this->displayToLogin('tmxv/help', $player->get('Login'), $winData);
     }
 
-    private function action(TmContainer $player, string $choice = 'none'): ActionResult
+    private function handleChoiceAction(TmContainer $player, ActionContext $context): void
     {
-        if ($choice === 'yes' || $choice === 'no') {
-            $this->voteController->update($player, $choice);
-            return ActionResult::Handled;
-        } elseif (($choice === 'cancel' || $choice === 'pass') && $player->get('isAdmin')) {
-            return ActionResult::NotHandled; //TODO SPLIT CANCEL / PASS
-        } elseif ($choice === 'close') {
-            $this->voteController->update($player, $choice);
-            return ActionResult::Closed;
-        }
+        $choiceName = $context->panel->choiceName($context->val);
+        $this->logDebug('choices', [$context->toArray(), $choiceName]);
+        $this->handleAction($player, $context->panel, $choiceName);
+    }
 
-        return ActionResult::NoAction;
+    private function handleAction(TmContainer $player, Panel $panel, string $choiceName): void
+    {
+        $this->logDebug("Action from panel: ", [
+            'panel'  => $panel->name,
+            'value'  => $panel->value,
+            'choice' => $choiceName,
+        ]);
+    }
+
+    private function handleCloseAction(TmContainer $player, ActionContext $context): void
+    {
+        $this->closeDisplayToLogin($player->get('Login'), $context->panel->value);
     }
 }
