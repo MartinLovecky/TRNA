@@ -38,6 +38,7 @@ class Players
             "{$login}.created" => time(),
             "{$login}.isMasterAdmin" => $isMasterAdmin,
             "{$login}.isAdmin" => $this->isAdmin($login),
+            "{$login}.IPAddress" => preg_replace('/:\d+/', '', $p->get('IPAddress', '')),
         ]);
 
         if ($p->get('IsSpectator')) {

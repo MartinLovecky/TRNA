@@ -164,7 +164,7 @@ class Cpll implements DependentPlugin
 
         $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
         $maniaLinks->displayToLogin(
-            'win', //TODO create window
+            Panel::Cpll->template(),
             $player->get('Login'),
             $data,
         );
@@ -174,7 +174,7 @@ class Cpll implements DependentPlugin
     {
         $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
         $maniaLinks->displayToLogin(
-            'tmxv/help',
+            Panel::Help->template(),
             $player->get('Login'),
             $this->window->build(Panel::Cpll, $player),
         );

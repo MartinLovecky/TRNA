@@ -16,8 +16,9 @@ use Yuha\Trna\Service\Aseco;
 class AppController
 {
     use LoggerAware;
-    private Restart $restarting = Restart::NONE;
+    private Restart $restarting = Restart::NO;
     private Status $currStatus = Status::NONE;
+    private int $uptime = 0;
 
     public function __construct(
         private Color $c,
@@ -27,6 +28,7 @@ class AppController
         private PluginController $pluginController,
     ) {
         $this->initLog('AppController');
+        $this->uptime = time();
     }
 
     public function run(): void
@@ -83,7 +85,6 @@ class AppController
 
         $this->pluginController->invokeAllMethods('onSync');
         $this->sendHeader();
-        $this->newChallenge();
     }
 
     private function sendHeader(): void
@@ -106,6 +107,11 @@ class AppController
         Aseco::consoleText('  Re-Authored: Xymph');
         Aseco::consoleText('  Remake: Yuhzel');
         Aseco::consoleText('###############################################################################');
+
+        $msg = <<<MSG
+            {$this->c->white}*** {$this->c->green}TRNA {$version} running on {$ip}:{$port}
+        MSG;
+        $this->client->sendChatMessageToAll($msg);
     }
 
     private function startCallbackPump(): void
@@ -121,25 +127,39 @@ class AppController
     private function dispatchCallback(TmContainer $cb): void
     {
         match ($cb->get('methodName')) {
-            'TrackMania.PlayerConnect'    => $this->onPlayerConnect($cb),
-            'TrackMania.PlayerDisconnect' => $this->onPlayerDisconnect($cb),
-            'TrackMania.PlayerChat'       => $this->onChat($cb),
-            'TrackMania.PlayerCheckpoint' => $this->onPlayerCp($cb),
-            'TrackMania.PlayerFinish'     => $this->onFinish($cb),
-            'TrackMania.BeginRound'       => $this->onBeginRound(),
-            'TrackMania.EndRound'         => $this->onEndRound(),
-            'TrackMania.StatusChanged'    => $this->gameStatusChanged($cb),
-            'TrackMania.BeginChallenge'   => $this->newChallenge(),
-            'TrackMania.EndChallenge'     => $this->endChallenge(),
+            'TrackMania.PlayerConnect'     => $this->onPlayerConnect($cb),
+            'TrackMania.PlayerDisconnect'  => $this->onPlayerDisconnect($cb),
+            'TrackMania.PlayerChat'        => $this->onChat($cb),
+            'TrackMania.PlayerCheckpoint'  => $this->onPlayerCp($cb),
+            'TrackMania.PlayerInfoChanged' => $this->playerInfoChanged($cb),
+            'TrackMania.PlayerFinish'      => $this->onFinish($cb),
+            //'TrackMania.BeginRound'       => $this->onBeginRound(),
+            //'TrackMania.EndRound'         => $this->onEndRound(),
+            'TrackMania.StatusChanged'     => $this->gameStatusChanged($cb),
+            'TrackMania.BeginChallenge'    => $this->newChallenge($cb),
+            'TrackMania.EndChallenge'      => $this->endChallenge($cb),
             'TrackMania.PlayerManialinkPageAnswer' => $this->onAnswer($cb),
-            default                       => null,
+            default                        => $this->logDebug("Unhadled cb {$cb->get('methodName')}", $cb->toArray()),
         };
     }
 
     private function onPlayerConnect(TmContainer $cb): void
     {
+        if ($cb->get('Login') === '') {
+            return;
+        }
+        $banned = TmContainer::fromJsonFile(Server::$jsonDir . 'Banned');
+        //NOTE: We could check if IPAddress is inside bannedIP
+        // but Login should be enough
+        if ($banned->has($cb->get('Login'))) {
+            $msg = <<<MSG
+                {$this->c->green}Could not connect: \n
+                Your IP was banned from this server!
+            MSG;
+            $this->client->sendChatMessageToLogin($msg, $cb->get('Login'));
+            return;
+        }
         $this->players->add($cb->get('Login'));
-        $this->logInfo('Connected player:', $cb->toArray());
         $player = $this->players->getByLogin($cb->get('Login'));
         $msg = <<<MSG
             {$this->c->green}Welcome {$player->get('NickName')} {$this->c->z->green}to {$this->c->white}
@@ -201,20 +221,31 @@ class AppController
         $this->pluginController->invokeAllMethods('onCheckpoint', $cb);
     }
 
+    private function playerInfoChanged(TmContainer $cb): void
+    {
+        $info = $cb->get('playerInfo');
+        $player = $this->players->getByLogin($info->get('Login'));
+        if (!$player instanceof TmContainer) {
+            return;
+        }
+        if ($info->get('LadderRanking') > 0) {
+            $player->set('ladderrank', $info->get('LadderRanking'));
+            $player->set('IsOfficial', true);
+        }
+        $player->set('IsOfficial', false);
+        $player->set('PrevStatus', $player->get('IsSpectator'));
+
+        if ($info->get('SpectatorStatus') % 10 !== 0) {
+            $player->set('IsSpectator', true);
+        }
+        $player->set('IsSpectator', false);
+        $this->pluginController->invokeAllMethods('onPlayerInfoChanged', $player);
+    }
+
     private function onFinish(TmContainer $cb): void
     {
         $date = date('Y/m/d;H:i:s');
-    }
-
-    private function onBeginRound(): void
-    {
-        $this->logDebug('onBeginRound ' . date("Y-m-d H:i:s"));
-        $this->pluginController->invokeAllMethods('onBeginRound');
-    }
-
-    private function onEndRound(): void
-    {
-        $this->pluginController->invokeAllMethods('onEndRound');
+        $this->logDebug('onFinish ' . date("Y-m-d H:i:s"), $cb->toArray());
     }
 
     private function gameStatusChanged(TmContainer $cb): void
@@ -222,14 +253,26 @@ class AppController
         $this->logDebug('gameStatusChanged ' . date("Y-m-d H:i:s"), $cb->toArray());
     }
 
-    private function newChallenge(): void
+    private function newChallenge(TmContainer $cb): void
     {
-        $this->logDebug('onNewChallenge ' . date("Y-m-d H:i:s"));
-        $this->pluginController->invokeAllMethods('onNewChallenge');
+        $this->logDebug('newChallenge ' . date("Y-m-d H:i:s"));
+        //
+        if ($this->restarting !== Restart::NO) {
+            if ($this->restarting === Restart::CHATTIME) {
+                $this->restarting = Restart::NO;
+            } else {
+                $this->restarting = Restart::NO;
+                //onRestartChallenge2
+            }
+        }
+        $this->pluginController->invokeAllMethods('onNewChallenge', $cb->toArray());
+        // onNewChallenge2 merged with onNewChallenge
+        // show_trackrecs maybe
     }
 
-    private function endChallenge()
+    private function endChallenge(TmContainer $cb): void
     {
+        $this->logDebug('endChallenge ' . date("Y-m-d H:i:s"), $cb->toArray());
     }
 
     private function onAnswer(TmContainer $cb): void

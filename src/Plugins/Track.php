@@ -136,7 +136,7 @@ class Track implements DependentPlugin
         $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
 
         $maniaLinks->displayToLogin(
-            'tmxv/help',
+            Panel::Help->template(),
             $player->get('Login'),
             $this->window->build(Panel::Track, $player),
         );

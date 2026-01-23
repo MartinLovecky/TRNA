@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace Yuha\Trna\Core\Controllers;
 
 use Yuha\Trna\Core\Contracts\{DependentPlugin, PluginInterface};
-use Yuha\Trna\Plugins\Cpll;
-use Yuha\Trna\Plugins\Dedimania;
-use Yuha\Trna\Plugins\Karma;
-use Yuha\Trna\Plugins\ManiaLinks;
-use Yuha\Trna\Plugins\RaspJukebox;
-use Yuha\Trna\Plugins\RaspVotes;
-use Yuha\Trna\Plugins\Tmxv;
-use Yuha\Trna\Plugins\Track;
+use Yuha\Trna\Plugins\{
+    Cpll,
+    Dedimania,
+    Karma,
+    ManiaLinks,
+    RaspJukebox,
+    RaspVotes,
+    Tmxv,
+    Track
+};
 
 class PluginController
 {
@@ -29,6 +31,7 @@ class PluginController
         private Tmxv $tmxv,
         private Track $track,
     ) {
+        // Plugins avaible when class implements DependentPlugin
         $this->plugins = [
             Cpll::class        => $this->cpll,
             Dedimania::class   => $this->dedimania,
@@ -69,6 +72,10 @@ class PluginController
         return null;
     }
 
+    /**
+     *
+     * @param [type] ...$args
+     */
     public function invokeAllMethods(string $methodName, ...$args): void
     {
         foreach ($this->plugins as $plugin) {

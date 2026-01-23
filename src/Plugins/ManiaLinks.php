@@ -68,7 +68,7 @@ class ManiaLinks implements DependentPlugin
     {
         $player->set("{$context->panel->name}.currentPage", $context->val);
         $winData = $this->window->build($context->panel, $player);
-        $this->displayToLogin('tmxv/help', $player->get('Login'), $winData);
+        $this->displayToLogin(Panel::Help->template(), $player->get('Login'), $winData);
     }
 
     private function handleChoiceAction(TmContainer $player, ActionContext $context): void

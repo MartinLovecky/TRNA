@@ -6,8 +6,7 @@ namespace Yuha\Trna\Core\Enums;
 
 enum Restart
 {
-    case NONE;
-    case MAP;
-    case MODE;
-    case SERVER;
+    case NO;
+    case INSTANT;
+    case CHATTIME;
 }

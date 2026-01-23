@@ -73,7 +73,7 @@ class RaspJukebox implements DependentPlugin
         $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
 
         //TODO (yuha) design Jukebox window
-        $win = self::WIN . 'test';
-        $maniaLinks->displayToLogin($win, $login, []);
+        $win = 'hud/small';
+        $maniaLinks->displayToLogin($win, $login, ['box_id' => 4444, 'list_id' => 4445]);
     }
 }

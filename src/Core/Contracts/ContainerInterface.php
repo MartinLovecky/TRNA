@@ -10,6 +10,9 @@ use IteratorAggregate;
 use JsonSerializable;
 use Traversable;
 
+/**
+ * TmContainer must have these methods
+ */
 interface ContainerInterface extends ArrayAccess, JsonSerializable, Countable, IteratorAggregate
 {
     public function set(string $path, mixed $value): static;

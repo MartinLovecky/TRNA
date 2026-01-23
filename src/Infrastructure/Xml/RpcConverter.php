@@ -13,7 +13,7 @@ use Yuha\Trna\Service\Internal\Arr;
 final class RpcConverter
 {
     /**
-     * Maps a PHP value to an appropriate XML-RPC type element.
+     * Serialize a PHP values to an appropriate XML-RPC type element.
      *
      * @param  mixed       $value PHP value to map
      * @param  DOMDocument $dom   DOMDocument to create elements
@@ -60,9 +60,9 @@ final class RpcConverter
     }
 
     /**
-     * Maps an XML-RPC type element to an appropriate PHP value.
+     * Deserialize an XML-RPC values to an appropriate PHP values.
      *
-     * @param  DOMElement $element XML-RPC type element to map
+     * @param  DOMElement $element XML-RPC type
      * @throws \Exception If element type is unknown
      * @return mixed      corresponding PHP value
      */

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Core\Enums;
 
-enum Field: int
+enum Field: int // TMX
 {
     case id        = 0;
     case name      = 1;

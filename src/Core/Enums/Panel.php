@@ -15,6 +15,19 @@ enum Panel: int
     case Tmxv   = 30;
     case Cpll   = 40;
 
+    public function template(): string
+    {
+        return match ($this) {
+            self::Help   => 'tmxv/help',
+            self::Skip   => 'votes/skip',
+            self::Kick   => 'votes/kick',
+            self::Replay => 'votes/replay',
+            self::Cpll   => 'cpll/cps',
+            self::Tmxv   => 'tmxv/video',
+            default      => throw new \RuntimeException("No template for panel {$this->name}")
+        };
+    }
+
     public function choices(): array
     {
         return match ($this) {

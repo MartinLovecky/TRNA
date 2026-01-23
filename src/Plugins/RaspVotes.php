@@ -84,7 +84,7 @@ class RaspVotes implements DependentPlugin
             // when closed do not display again
             if ($status['choice'] !== 'close') {
                 $maniaLinks->displayToAll(
-                    '',
+                    $panel->template(),
                     $this->window->build($panel, $player),
                 );
             }

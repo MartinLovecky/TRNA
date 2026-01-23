@@ -124,6 +124,10 @@ class RepoController
         return $column ? $stmt->fetchAll(...$item) : $stmt->fetchAll(...$item);
     }
 
+    /**
+     * Ensures existance of data.
+     *
+     */
     private function exist(Table $table, ?string $column = null, ?string $value = null): bool
     {
         $table = strtolower($table->name);
@@ -136,6 +140,7 @@ class RepoController
         return $stmt->fetch() !== false;
     }
 
+    //TODO: RS_KARMA needs compose key of ChallengeId|playerID
     private function check(Table $table): string
     {
         return match ($table) {
@@ -143,7 +148,7 @@ class RepoController
             Table::CHALLENGES => 'Uid',
             Table::RECORDS => 'ChallengeId',
             Table::RS_KARMA => 'IDK',
-            default => 'FUCKOFF'
+            default => 'NONE'
         };
     }
 }

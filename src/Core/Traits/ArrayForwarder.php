@@ -42,7 +42,6 @@ trait ArrayForwarder
 
     /**
      * DONT convert this into attribute keep it as method
-     *
      */
     protected function allowedArrMethods(): array
     {
@@ -59,7 +58,6 @@ trait ArrayForwarder
 
     /**
      * DONT convert this into attribute keep it as method
-     *
      */
     protected function allowedArrayFunctions(): array
     {

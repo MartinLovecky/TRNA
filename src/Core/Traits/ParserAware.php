@@ -84,7 +84,7 @@ trait ParserAware
      */
     public static function fromJsonFile(string $filePath): static
     {
-        $json = Aseco::safeFileGetContents($filePath);
+        $json = Aseco::safeFileGetContents($filePath . '.json');
 
         if (!$json) {
             throw new \RuntimeException("Invalid filePath: {$filePath}");

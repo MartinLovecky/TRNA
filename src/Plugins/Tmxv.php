@@ -99,7 +99,7 @@ class Tmxv implements DependentPlugin
         $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
 
         $maniaLinks->displayToLogin(
-            '',
+            Panel::Tmxv->template(),
             $player->get('Login'),
             $this->window->build(Panel::Tmxv, $player),
         );
@@ -158,7 +158,7 @@ class Tmxv implements DependentPlugin
     {
         $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
         $maniaLinks->displayToLogin(
-            'tmxv/help',
+            Panel::Help->template(),
             $player->get('Login'),
             $this->window->build(Panel::Tmxv, $player),
         );

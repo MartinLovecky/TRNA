@@ -189,7 +189,7 @@ class Client
             return $this->response->processResponse($method, $contents);
         }
 
-        return TmContainer::fromArray([], true);
+        return TmContainer::fromArray();
     }
 
     private function convertHandle(int $handle): int
@@ -203,8 +203,12 @@ class Client
         $this->query('SendDisplayManialinkPage', [$xml, $timeout, $hide]);
     }
 
-    public function sendXmlToLogin(string $login, string $xml, int $timeout = 0, bool $hide = false): void
-    {
+    public function sendXmlToLogin(
+        string $login,
+        string $xml,
+        int $timeout = 0,
+        bool $hide = false
+    ): void {
         $this->query('SendDisplayManialinkPageToLogin', [$login, $xml, $timeout, $hide]);
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Core\Enums;
 
-enum Rec: int
+enum Rec: int // TMX
 {
     case replayid = 0;
     case userid   = 1;
