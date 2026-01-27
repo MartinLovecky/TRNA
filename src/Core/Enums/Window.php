@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Yuha\Trna\Core\Enums;
+
+enum Window: int
+{
+    case Admin  = 20;
+    case Track  = 21;
+    case Skip   = 22;
+    case Replay = 23;
+    case Kick   = 24;
+    case Tmxv   = 25;
+    case Cpll   = 26;
+    case Help   = 27;
+
+    public function template(): string
+    {
+        return match ($this) {
+            self::Help   => 'tmxv/help',
+            self::Skip   => 'votes/skip',
+            self::Kick   => 'votes/kick',
+            self::Replay => 'votes/replay',
+            self::Cpll   => 'cpll/cps',
+            self::Tmxv   => 'tmxv/video',
+            default      => throw new \RuntimeException("No template for panel {$this->name}")
+        };
+    }
+}

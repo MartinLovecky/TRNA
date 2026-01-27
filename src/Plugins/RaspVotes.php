@@ -6,11 +6,13 @@ namespace Yuha\Trna\Plugins;
 
 use Revolt\EventLoop;
 use Yuha\Trna\Core\Contracts\DependentPlugin;
-use Yuha\Trna\Core\Controllers\{PluginController, VoteController};
-use Yuha\Trna\Core\Enums\{Panel, Votes};
+use Yuha\Trna\Core\Controllers\PluginController;
+use Yuha\Trna\Core\Controllers\VoteController;
+use Yuha\Trna\Core\Enums\Votes;
+use Yuha\Trna\Core\Enums\Window;
 use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Core\Window\Window;
+use Yuha\Trna\Core\Window\Builder;
 
 class RaspVotes implements DependentPlugin
 {
@@ -18,8 +20,8 @@ class RaspVotes implements DependentPlugin
     private PluginController $pluginController;
 
     public function __construct(
+        private Builder $builder,
         private VoteController $voteController,
-        private Window $window
     ) {
         $this->initLog('RaspVotes');
     }
@@ -41,10 +43,10 @@ class RaspVotes implements DependentPlugin
         }
 
         $res = match ($votes) {
-            Votes::SKIP    => $this->voteController->startVote($player, Panel::Skip),
-            Votes::OP_SKIP => $this->voteController->startVote($player, Panel::Skip, false),
-            Votes::KICK    => $this->voteController->startVote($player, Panel::Kick),
-            Votes::OP_KICK => $this->voteController->startVote($player, Panel::Kick, false),
+            Votes::SKIP    => $this->voteController->startVote($player, Window::Skip),
+            Votes::OP_SKIP => $this->voteController->startVote($player, Window::Skip, false),
+            Votes::KICK    => $this->voteController->startVote($player, Window::Kick),
+            Votes::OP_KICK => $this->voteController->startVote($player, Window::Kick, false),
             default => null,
         };
 
@@ -67,26 +69,27 @@ class RaspVotes implements DependentPlugin
         };
     }
 
-    private function startVoteCountdown(TmContainer $player, Panel $panel): void
+    private function startVoteCountdown(TmContainer $player, Window $window): void
     {
         $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
 
-        EventLoop::repeat(1.0, function (string $id) use ($player, $panel, $maniaLinks) {
+        EventLoop::repeat(1.0, function (string $id) use ($player, $window, $maniaLinks) {
             $status = $this->voteController->status();
             $remaining = $this->voteController->tick();
 
             if ($remaining <= 0 || $status['total'] === $status['playerCnt']) {
                 EventLoop::cancel($id);
-                $this->voteController->resolveVote(); //TODO
-                $maniaLinks->closeDisplayToAll($panel->value);
+                $this->voteController->resolveVote(); //FIXME
+                // $maniaLinks->closeDisplayToAll($window->value);
                 return;
             }
             // when closed do not display again
             if ($status['choice'] !== 'close') {
-                $maniaLinks->displayToAll(
-                    $panel->template(),
-                    $this->window->build($panel, $player),
-                );
+                //FIXME
+                // $maniaLinks->displayToAll(
+                //     $panel->template(),
+                //     $this->window->build($panel, $player),
+                // );
             }
 
             $remaining--;

@@ -5,11 +5,17 @@ declare(strict_types=1);
 namespace Yuha\Trna\Plugins;
 
 use Yuha\Trna\Core\Contracts\DependentPlugin;
-use Yuha\Trna\Core\Controllers\{PluginController, VoteController};
-use Yuha\Trna\Core\Enums\{ActionKind, Panel};
+use Yuha\Trna\Core\Controllers\PluginController;
+use Yuha\Trna\Core\Controllers\VoteController;
+use Yuha\Trna\Core\Enums\Action;
+use Yuha\Trna\Core\Enums\Window;
 use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Core\Window\{ActionCodec, ActionContext, Window};
+use Yuha\Trna\Core\Window\Builder;
+use Yuha\Trna\Core\Window\Codec;
+use Yuha\Trna\Core\Window\Context;
+use Yuha\Trna\Core\Window\Data;
+use Yuha\Trna\Core\Window\Registry;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 
 class ManiaLinks implements DependentPlugin
@@ -19,9 +25,12 @@ class ManiaLinks implements DependentPlugin
     private PluginController $pluginController;
 
     public function __construct(
+        private Builder $builder,
         private Client $client,
+        private Codec $codec,
+        private Data $data,
+        private Registry $registry,
         private VoteController $voteController,
-        private Window $window
     ) {
         $this->initLog('Plugin-ManiaLinks');
     }
@@ -33,62 +42,32 @@ class ManiaLinks implements DependentPlugin
 
     public function onAnswer(TmContainer $player): void
     {
-        $context = ActionCodec::decode($player->get('encodedAction'));
+        $context = $this->codec->decode($player->get('encodedAction'));
+        $this->handleAction($player, $context);
+    }
 
-        match ($context->kind) {
-            ActionKind::Page   => $this->handlePageAction($player, $context),
-            ActionKind::Choice => $this->handleChoiceAction($player, $context),
-            ActionKind::Close  => $this->handleCloseAction($player, $context),
-            ActionKind::Chat   => $this->logDebug('Chat actions not supported', $context->toArray()),
-            default => $this->logDebug("Unexpected context:", $context->toArray())
+    private function handleAction(TmContainer $player, Context $ctx): void
+    {
+        $playerId = $player->get('Login');
+        $window = $ctx->window;
+        match ($ctx->action) {
+            Action::Next  => $this->registry->next($playerId, $window),
+            Action::Prev  => $this->registry->prev($playerId, $window),
+            Action::First => $this->registry->first($playerId, $window),
+            Action::Last  => $this->registry->last($playerId, $window),
+            Action::Page  => $this->registry->setPage($playerId, $window, $window->value),
+            Action::Open  => $this->builder->display(Window::from($ctx->value), $playerId, $this->data->getData($window)),
+            Action::Close => $this->client->sendXmlToAll("<manialink id='{$window->value}'></manialink>"),
+            Action::Yes, Action::No, Action::Cancel, Action::Pass => $this->handleChoice($player, $ctx),
+            default => null
         };
+
+        if (\in_array($ctx->action, [Action::Next, Action::Prev, Action::First, Action::Last], true)) {
+            $this->builder->display($window, $playerId, $this->data->getData($window));
+        }
     }
 
-    public function displayToAll(string $winName, array $context, bool $hide = false): void
+    private function handleChoice(TmContainer $player, Context $ctx)
     {
-        $this->client->sendRenderToAll($winName, $context, self::OUT, $hide);
-    }
-
-    public function displayToLogin(string $winName, string $login, array $context, bool $hide = false): void
-    {
-        $this->client->sendRenderToLogin($login, $winName, $context, self::OUT, $hide);
-    }
-
-    public function closeDisplayToAll(int $id = 1): void
-    {
-        $this->client->sendXmlToAll("<manialink id='{$id}'></manialink>");
-    }
-
-    public function closeDisplayToLogin(string $login, int $id = 1): void
-    {
-        $this->client->sendXmlToLogin($login, "<manialink id='{$id}'></manialink>");
-    }
-
-    private function handlePageAction(TmContainer $player, ActionContext $context): void
-    {
-        $player->set("{$context->panel->name}.currentPage", $context->val);
-        $winData = $this->window->build($context->panel, $player);
-        $this->displayToLogin(Panel::Help->template(), $player->get('Login'), $winData);
-    }
-
-    private function handleChoiceAction(TmContainer $player, ActionContext $context): void
-    {
-        $choiceName = $context->panel->choiceName($context->val);
-        $this->logDebug('choices', [$context->toArray(), $choiceName]);
-        $this->handleAction($player, $context->panel, $choiceName);
-    }
-
-    private function handleAction(TmContainer $player, Panel $panel, string $choiceName): void
-    {
-        $this->logDebug("Action from panel: ", [
-            'panel'  => $panel->name,
-            'value'  => $panel->value,
-            'choice' => $choiceName,
-        ]);
-    }
-
-    private function handleCloseAction(TmContainer $player, ActionContext $context): void
-    {
-        $this->closeDisplayToLogin($player->get('Login'), $context->panel->value);
     }
 }

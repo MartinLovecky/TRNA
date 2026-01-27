@@ -5,27 +5,26 @@ declare(strict_types=1);
 namespace Yuha\Trna\Core\Window;
 
 use Yuha\Trna\Core\Controllers\VoteController;
-use Yuha\Trna\Core\Enums\Panel;
-use Yuha\Trna\Core\TmContainer;
+use Yuha\Trna\Core\Enums\Window;
 
-class WindowData
+class Data
 {
     public function __construct(private VoteController $voteController)
     {
     }
 
-    public function getData(Panel $panel, TmContainer $player): array
+    public function getData(Window $window): array
     {
-        return match ($panel) {
-            Panel::Skip  => $this->skipData($player),
-            Panel::Track => $this->trackHelp(),
-            Panel::Tmxv  => $this->tmxvHelp(),
-            Panel::Cpll  => $this->cpllHelp(),
+        return match ($window) {
+            Window::Skip  => $this->skipData(),
+            Window::Track => $this->trackHelp(),
+            Window::Tmxv  => $this->tmxvHelp(),
+            Window::Cpll  => $this->cpllHelp(),
             default => []
         };
     }
 
-    private function skipData(TmContainer $player): array
+    public function skipData(): array
     {
         $status = $this->voteController->status();
 
@@ -35,14 +34,14 @@ class WindowData
 
         return [
             'actions'   => $status['actions'],
-            'isAdmin'   => $player->get('isAdmin'),
+            'isAdmin'   => $status['isAdmin'],
             'remaining' => $this->voteController->tick(),
             'yes'       => $status['yes'],
             'no'        => $status['no'],
         ];
     }
 
-    private function trackHelp(): array
+    public function trackHelp(): array
     {
         return [
             ['cmd' => '/track',   'des' => 'Track commands must start with /track'],
@@ -53,7 +52,7 @@ class WindowData
         ];
     }
 
-    private function tmxvHelp(): array
+    public function tmxvHelp(): array
     {
         return [
             ['cmd' => '/tmxv',       'des' => 'Tmxv commands must start with /tmxv'],
@@ -67,7 +66,7 @@ class WindowData
         ];
     }
 
-    private function cpllHelp(): array
+    public function cpllHelp(): array
     {
         return [
             ['cmd' => '/cpll',        'des' => 'CPLL commands must start with /cpll'],

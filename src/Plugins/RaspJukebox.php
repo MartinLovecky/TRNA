@@ -9,6 +9,7 @@ use Yuha\Trna\Core\Controllers\PluginController;
 use Yuha\Trna\Core\Enums\Jukebox;
 use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
+use Yuha\Trna\Core\Window\Builder;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
 
@@ -19,6 +20,7 @@ class RaspJukebox implements DependentPlugin
     private const string WIN = 'jukebox' . \DIRECTORY_SEPARATOR;
 
     public function __construct(
+        private Builder $builder,
         private Client $client,
         private Challenge $challenge
     ) {
@@ -70,10 +72,13 @@ class RaspJukebox implements DependentPlugin
 
     public function displayTest(string $login): void
     {
-        $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
-
+        //$this->builder->display();
         //TODO (yuha) design Jukebox window
         $win = 'hud/small';
-        $maniaLinks->displayToLogin($win, $login, ['box_id' => 4444, 'list_id' => 4445]);
+        // $maniaLinks->displayToLogin(
+        //     $win,
+        //     $login,
+        //     ['box_id' => 4444, 'list_id' => 4445]
+        // );
     }
 }

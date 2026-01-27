@@ -7,8 +7,8 @@ namespace Yuha\Trna\Plugins;
 use Yuha\Trna\Core\{Color, Server, TmContainer};
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
-use Yuha\Trna\Core\Enums\{GameMode, Panel};
-use Yuha\Trna\Core\Window\Window;
+use Yuha\Trna\Core\Enums\{GameMode, Window};
+use Yuha\Trna\Core\Window\{Builder, Data};
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
 use Yuha\Trna\Service\Aseco;
@@ -20,10 +20,11 @@ class Track implements DependentPlugin
     private PluginController $pluginController;
 
     public function __construct(
-        private Color $c,
-        private Client $client,
-        private Challenge $challenge,
-        private Window $window
+        private readonly Color $c,
+        private readonly Client $client,
+        private readonly Data $data,
+        private readonly Challenge $challenge,
+        private readonly Builder $builder
     ) {
     }
 
@@ -133,12 +134,10 @@ class Track implements DependentPlugin
 
     private function help(TmContainer $player): void
     {
-        $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
-
-        $maniaLinks->displayToLogin(
-            Panel::Help->template(),
+        $this->builder->display(
+            Window::Help,
             $player->get('Login'),
-            $this->window->build(Panel::Track, $player),
+            $this->data->getData(Window::Track),
         );
     }
 

@@ -7,8 +7,9 @@ namespace Yuha\Trna\Plugins;
 use Yuha\Trna\Core\{Color, TmContainer};
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
-use Yuha\Trna\Core\Enums\Panel;
-use Yuha\Trna\Core\Window\Window;
+use Yuha\Trna\Core\Enums\Window;
+use Yuha\Trna\Core\Window\Builder;
+use Yuha\Trna\Core\Window\Data;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
 use Yuha\Trna\Service\Aseco;
@@ -22,10 +23,11 @@ class Cpll implements DependentPlugin
     private array $cpll = [];
 
     public function __construct(
-        private Color $c,
-        private Client $client,
-        private Challenge $challenge,
-        private Window $window,
+        private readonly Builder $builder,
+        private readonly Data $data,
+        private readonly Color $c,
+        private readonly Client $client,
+        private readonly Challenge $challenge,
     ) {
     }
 
@@ -162,21 +164,20 @@ class Cpll implements DependentPlugin
             }
         }
 
-        $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
-        $maniaLinks->displayToLogin(
-            Panel::Cpll->template(),
+        $this->builder->display(
+            Window::Cpll,
             $player->get('Login'),
             $data,
+            'cp-list',
         );
     }
 
     private function help(TmContainer $player): void
     {
-        $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
-        $maniaLinks->displayToLogin(
-            Panel::Help->template(),
+        $this->builder->display(
+            Window::Help,
             $player->get('Login'),
-            $this->window->build(Panel::Cpll, $player),
+            $this->data->cpllHelp(),
         );
     }
 

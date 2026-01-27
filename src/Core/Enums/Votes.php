@@ -13,12 +13,12 @@ enum Votes: string
     case KICK      = 'kick';
     case OP_KICK   = '/kick';
 
-    public function panel(): Panel
+    public function panel(): Window
     {
         return match ($this) {
-            self::SKIP, self::OP_SKIP     => Panel::Skip,
-            self::REPLAY, self::OP_REPLAY => Panel::Replay,
-            self::KICK, self::OP_KICK     => Panel::Kick,
+            self::SKIP, self::OP_SKIP     => Window::Skip,
+            self::REPLAY, self::OP_REPLAY => Window::Replay,
+            self::KICK, self::OP_KICK     => Window::Kick,
         };
     }
 }

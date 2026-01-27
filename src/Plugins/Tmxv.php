@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Plugins;
 
-use Yuha\Trna\Core\{Color, TmContainer};
+use Yuha\Trna\Core\Color;
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
-use Yuha\Trna\Core\Enums\Panel;
+use Yuha\Trna\Core\Enums\Window;
+use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Core\Window\Window;
+use Yuha\Trna\Core\Window\Builder;
+use Yuha\Trna\Core\Window\Data;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
-use Yuha\Trna\Service\{Aseco, YoutubeClient};
+use Yuha\Trna\Service\Aseco;
 use Yuha\Trna\Service\Internal\YoutubeSearchResults;
+use Yuha\Trna\Service\YoutubeClient;
 
 class Tmxv implements DependentPlugin
 {
@@ -23,11 +26,12 @@ class Tmxv implements DependentPlugin
     private ?array $videos = null;
 
     public function __construct(
-        private Color $c,
-        private Client $client,
-        private Challenge $challenge,
-        private Window $window,
-        private YoutubeClient $youtubeClient
+        private readonly Color $c,
+        private readonly Client $client,
+        private readonly Data $data,
+        private readonly Challenge $challenge,
+        private readonly Builder $builder,
+        private readonly YoutubeClient $youtubeClient
     ) {
         $this->initLog('Plugin-Tmxv');
     }
@@ -96,12 +100,11 @@ class Tmxv implements DependentPlugin
 
     private function showWindow(TmContainer $player): void
     {
-        $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
-
-        $maniaLinks->displayToLogin(
-            Panel::Tmxv->template(),
+        //TODO data
+        $this->builder->display(
+            Window::Tmxv,
             $player->get('Login'),
-            $this->window->build(Panel::Tmxv, $player),
+            $this->data->getData(Window::Tmxv),
         );
     }
 
@@ -156,11 +159,10 @@ class Tmxv implements DependentPlugin
 
     private function help(TmContainer $player): void
     {
-        $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
-        $maniaLinks->displayToLogin(
-            Panel::Help->template(),
+        $this->builder->display(
+            Window::Help,
             $player->get('Login'),
-            $this->window->build(Panel::Tmxv, $player),
+            $this->data->getData(Window::Tmxv),
         );
     }
 

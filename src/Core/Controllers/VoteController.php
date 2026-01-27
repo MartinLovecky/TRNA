@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Yuha\Trna\Core\Controllers;
 
 use Yuha\Trna\Core\{Color, TmContainer};
-use Yuha\Trna\Core\Enums\{GameMode, Panel};
+use Yuha\Trna\Core\Enums\Action;
+use Yuha\Trna\Core\Enums\{GameMode, Window};
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Core\Window\WindowRegistry;
+use Yuha\Trna\Core\Window\Codec;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\{Challenge, Players};
 
@@ -22,17 +23,18 @@ class VoteController
     private ?array $vote = null;
 
     public function __construct(
-        private Color $c,
-        private Client $client,
-        private Challenge $challenge,
-        private Players $players
+        private readonly Codec $codec,
+        private readonly Color $c,
+        private readonly Client $client,
+        private readonly Challenge $challenge,
+        private readonly Players $players
     ) {
         $this->initLog('VoteController');
     }
 
     public function startVote(
         TmContainer $player,
-        Panel $panel,
+        Window $window,
         bool $display = true
     ): array {
         if (isset($this->vote)) {
@@ -47,16 +49,19 @@ class VoteController
             return ['reason' => 'not_enought_players'];
         }
 
-        $actions = [];
-        foreach ($panel->choices() as $key => $_) {
-            $actions[$key] = WindowRegistry::choice($panel, $key);
-        }
+        $actions = array_reduce(
+            Action::choiceCases(),
+            fn (array $carry, Action $action) => $carry + [
+                $action->label() => $this->codec->encode($window, $action),
+            ],
+            [],
+        );
 
-        $player->set("{$panel->name}.vote", 'none');
+        $player->set("{$window->name}.vote", 'none');
         $startedAt = microtime(true);
 
         $this->vote = [
-            'type'            => $panel->name,
+            'type'            => $window->name,
             'templateActions' => $actions,
             'initiator'       => $player->get('Login'),
             'startedAt'       => $startedAt,
@@ -65,7 +70,7 @@ class VoteController
             'total'           => 0,
             'votes'           => [],
             'choice'          => 'none',
-            'header'          => "{$panel->name} vote",
+            'header'          => "{$window->name} vote",
             'param'           => $player->get('cmd.mod'),
             'arg'             => $player->get('cmd.param'),
         ];
@@ -138,7 +143,7 @@ class VoteController
         return [
             'type'      => $this->vote['type'],
             'actions'   => $this->vote['templateActions'],
-            'panel'     => $this->vote['type'],
+            'window'     => $this->vote['type'],
             'initiator' => $this->vote['initiator'],
             'header'    => $this->vote['header'],
             'choice'    => $this->vote['choice'],
