@@ -15,14 +15,14 @@ class Builder
         private readonly Client $client,
         private readonly Codec $codec,
         private readonly Registry $registry
-    ) {
-    }
+    ) {}
 
     public function display(
         Window $window,
         ?string $login,
         array $data,
-        string $header = 'help'
+        string $header = 'help',
+        bool $close = false
     ): void {
         $context = $this->build($window, $header, $data, $login);
 
@@ -31,11 +31,13 @@ class Builder
                 login: $login,
                 template: $window->template(),
                 context: $context,
+                hide: $close
             );
         } else {
             $this->client->sendRenderToAll(
-                template: $window->name,
+                template: $window->template(),
                 context: $context,
+                hide: $close
             );
         }
     }

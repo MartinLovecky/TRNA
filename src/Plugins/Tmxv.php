@@ -4,19 +4,16 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Plugins;
 
-use Yuha\Trna\Core\Color;
+use Yuha\Trna\Core\{Color, TmContainer};
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
 use Yuha\Trna\Core\Enums\Window;
-use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Core\Window\Builder;
-use Yuha\Trna\Core\Window\Data;
+use Yuha\Trna\Core\Window\{Builder, Data};
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
-use Yuha\Trna\Service\Aseco;
+use Yuha\Trna\Service\{Aseco, YoutubeClient};
 use Yuha\Trna\Service\Internal\YoutubeSearchResults;
-use Yuha\Trna\Service\YoutubeClient;
 
 class Tmxv implements DependentPlugin
 {
@@ -100,11 +97,10 @@ class Tmxv implements DependentPlugin
 
     private function showWindow(TmContainer $player): void
     {
-        //TODO data
         $this->builder->display(
             Window::Tmxv,
             $player->get('Login'),
-            $this->data->getData(Window::Tmxv),
+            $this->getVideo(),
         );
     }
 

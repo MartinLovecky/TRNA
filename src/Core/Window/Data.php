@@ -20,6 +20,7 @@ class Data
             Window::Track => $this->trackHelp(),
             Window::Tmxv  => $this->tmxvHelp(),
             Window::Cpll  => $this->cpllHelp(),
+            Window::JUKE_LIST => $this->jukeList(),
             default => []
         };
     }
@@ -78,5 +79,10 @@ class Data
             ['cmd' => 'filter on',    'des' => '[Admin] Hide spectators from the list'],
             ['cmd' => 'filter off',   'des' => '[Admin] Show spectators in the list'],
         ];
+    }
+
+    public function jukeList(): array
+    {
+        return [];
     }
 }

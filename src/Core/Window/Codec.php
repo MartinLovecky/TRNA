@@ -8,7 +8,7 @@ use Yuha\Trna\Core\Enums\{Action, Window};
 
 final class Codec
 {
-    private const WINDOW_SHIFT = 10000;
+    private const WINDOW_SHIFT  = 10000;
     private const ACTION_SHIFT  = 100;
 
     public function encode(Window $window, Action $action, int $value = 0): int

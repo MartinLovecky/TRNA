@@ -6,10 +6,10 @@ namespace Yuha\Trna\Plugins;
 
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
-use Yuha\Trna\Core\Enums\Jukebox;
+use Yuha\Trna\Core\Enums\{Action, Jukebox, Window};
 use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Core\Window\Builder;
+use Yuha\Trna\Core\Window\{Builder, Codec};
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
 
@@ -17,14 +17,16 @@ class RaspJukebox implements DependentPlugin
 {
     use LoggerAware;
     private PluginController $pluginController;
-    private const string WIN = 'jukebox' . \DIRECTORY_SEPARATOR;
+    public int $jukeListID;
 
     public function __construct(
-        private Builder $builder,
-        private Client $client,
-        private Challenge $challenge
+        private readonly Builder $builder,
+        private readonly Codec $codec,
+        private readonly Client $client,
+        private readonly Challenge $challenge
     ) {
         $this->initLog('Plugin-Jukebox');
+        $this->jukeListID = $this->codec->encode(Window::JUKE_LIST, Action::Open);
     }
 
     public function setRegistry(PluginController $pluginController): void
@@ -34,8 +36,14 @@ class RaspJukebox implements DependentPlugin
 
     // ---------- Event Handlers  ----------
 
-    public function onSync(): void
+    public function onPlayerConnect(TmContainer $player): void
     {
+        $this->builder->display(
+            window: Window::JUKE_BOX,
+            login: $player->get('Login'),
+            data: ['list_id' => $this->jukeListID],
+            close: true
+        );
     }
 
     public function onNewChallenge(): void

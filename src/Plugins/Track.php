@@ -8,6 +8,7 @@ use Yuha\Trna\Core\{Color, Server, TmContainer};
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
 use Yuha\Trna\Core\Enums\{GameMode, Window};
+use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Core\Window\{Builder, Data};
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
@@ -15,6 +16,7 @@ use Yuha\Trna\Service\Aseco;
 
 class Track implements DependentPlugin
 {
+    use LoggerAware;
     private int $startTime = 0;
     private int $totalReplays = 0;
     private PluginController $pluginController;
@@ -26,6 +28,7 @@ class Track implements DependentPlugin
         private readonly Challenge $challenge,
         private readonly Builder $builder
     ) {
+        $this->initLog('Plugin-Track');
     }
 
     public function setRegistry(PluginController $pluginController): void

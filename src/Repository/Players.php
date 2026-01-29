@@ -82,7 +82,7 @@ class Players
 
     private function isAdmin(string $login): bool
     {
-        $admins = TmContainer::fromJsonFile(Server::$jsonDir . 'Admins.json')->get('Admins')->getIterator();
+        $admins = TmContainer::fromJsonFile(Server::$jsonDir . 'Admins')->get('Admins')->getIterator();
         foreach ($admins as $_ => $value) {
             return $login === $value;
         }

@@ -6,13 +6,11 @@ namespace Yuha\Trna\Plugins;
 
 use Revolt\EventLoop;
 use Yuha\Trna\Core\Contracts\DependentPlugin;
-use Yuha\Trna\Core\Controllers\PluginController;
-use Yuha\Trna\Core\Controllers\VoteController;
-use Yuha\Trna\Core\Enums\Votes;
-use Yuha\Trna\Core\Enums\Window;
+use Yuha\Trna\Core\Controllers\{PluginController, VoteController};
+use Yuha\Trna\Core\Enums\{Votes, Window};
 use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Core\Window\Builder;
+use Yuha\Trna\Core\Window\{Builder, Data};
 
 class RaspVotes implements DependentPlugin
 {
@@ -20,10 +18,11 @@ class RaspVotes implements DependentPlugin
     private PluginController $pluginController;
 
     public function __construct(
-        private Builder $builder,
-        private VoteController $voteController,
+        private readonly Builder $builder,
+        private readonly Data $data,
+        private readonly VoteController $voteController,
     ) {
-        $this->initLog('RaspVotes');
+        $this->initLog('Plugin-RaspVotes');
     }
 
     /**
@@ -72,24 +71,24 @@ class RaspVotes implements DependentPlugin
     private function startVoteCountdown(TmContainer $player, Window $window): void
     {
         $maniaLinks = $this->pluginController->getPlugin(ManiaLinks::class);
-
-        EventLoop::repeat(1.0, function (string $id) use ($player, $window, $maniaLinks) {
+        EventLoop::repeat(1.0, function (string $id) use ($window, $maniaLinks) {
             $status = $this->voteController->status();
             $remaining = $this->voteController->tick();
 
             if ($remaining <= 0 || $status['total'] === $status['playerCnt']) {
                 EventLoop::cancel($id);
-                $this->voteController->resolveVote(); //FIXME
-                // $maniaLinks->closeDisplayToAll($window->value);
+                $this->voteController->resolveVote(); //TODO
+                $maniaLinks->closeWindow($window->value);
                 return;
             }
             // when closed do not display again
             if ($status['choice'] !== 'close') {
-                //FIXME
-                // $maniaLinks->displayToAll(
-                //     $panel->template(),
-                //     $this->window->build($panel, $player),
-                // );
+                $this->builder->display(
+                    window: $window,
+                    login: null,
+                    data: $this->data->getData($window),
+                    header: 'window',
+                );
             }
 
             $remaining--;
