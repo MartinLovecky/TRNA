@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yuha\Trna\Service\Internal;
+namespace Yuha\Trna\Core\DTO;
 
 final class YoutubeVideoResult
 {

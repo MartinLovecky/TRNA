@@ -8,6 +8,7 @@ use Twig\Environment;
 use Twig\Extension\DebugExtension;
 use Twig\Loader\FilesystemLoader;
 use Yuha\Trna\Core\Server;
+use Yuha\Trna\Service\Internal\TwigAssetExtension;
 use Yuha\Trna\Service\Internal\TwigFiltersExtension;
 
 final class WidgetBuilder
@@ -27,6 +28,7 @@ final class WidgetBuilder
         ]);
 
         $this->twig->addExtension(new TwigFiltersExtension());
+        $this->twig->addExtension(new TwigAssetExtension());
 
         if ($this->twig->isDebug()) {
             $this->twig->addExtension(new DebugExtension());

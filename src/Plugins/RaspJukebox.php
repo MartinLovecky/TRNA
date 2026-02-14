@@ -42,7 +42,6 @@ class RaspJukebox implements DependentPlugin
             window: Window::JUKE_BOX,
             login: $player->get('Login'),
             data: ['list_id' => $this->jukeListID],
-            close: true
         );
     }
 

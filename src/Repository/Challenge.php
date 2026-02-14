@@ -29,7 +29,7 @@ class Challenge
         $this->gbxFetcher->processFile(Server::$trackDir . $file);
         $this->tmxFetcher->initTmx($this->gbxFetcher->UId);
         $this->createChallengeInDb();
-        $this->localRecord->createRecord($this->gbxFetcher->UId);
+        $this->localRecord->createDBRecord($this->gbxFetcher->UId);
     }
 
     public function getTmx(): TmxFetcher

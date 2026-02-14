@@ -6,6 +6,7 @@ namespace Yuha\Trna\Core\Controllers;
 
 use Yuha\Trna\Core\Contracts\{DependentPlugin, PluginInterface};
 use Yuha\Trna\Plugins\{
+    Checkpoints,
     Cpll,
     Dedimania,
     Karma,
@@ -22,6 +23,7 @@ class PluginController
     private array $plugins = [];
 
     public function __construct(
+        private Checkpoints $checkpoints,
         private Cpll $cpll,
         private Dedimania $dedimania,
         private Karma $karma,
@@ -33,8 +35,10 @@ class PluginController
     ) {
         // Plugins avaible when class implements DependentPlugin
         $this->plugins = [
+            Checkpoints::class => $this->checkpoints,
             Cpll::class        => $this->cpll,
             Dedimania::class   => $this->dedimania,
+            Karma::class       => $this->karma,
             ManiaLinks::class  => $this->maniaLinks,
             RaspJukebox::class => $this->raspJukebox,
             RaspVotes::class   => $this->raspVotes,

@@ -22,14 +22,12 @@ require __DIR__ . '/vendor/autoload.php';
 
 $container = new \League\Container\Container();
 $container->delegate(new \League\Container\ReflectionContainer(true));
+// ---------- .env support ----------------------
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
-
+// ---------- Sets Paths for APP ----------------
 \Yuha\Trna\Core\Server::setPaths();
-
 $controller = $container->get(\Yuha\Trna\Core\Controllers\AppController::class);
-$fluent = $container->get(\Yuha\Trna\Repository\Fluent::class);
-$structure = $container->get(\Yuha\Trna\Repository\Structure::class);
 
 // ---------- SIGNAL HANDLING (CTRL-C) ----------
 Revolt\EventLoop::onSignal(SIGINT, static function () {
@@ -37,15 +35,15 @@ Revolt\EventLoop::onSignal(SIGINT, static function () {
     Revolt\EventLoop::getDriver()->stop();
 });
 
-// ---------- TERMINAL MODE ----------
-if (DIRECTORY_SEPARATOR === "/") { // POSIX only
+// ---------- TERMINAL MODE POSIX only ----------
+if (DIRECTORY_SEPARATOR === "/") {
     shell_exec('stty -icanon -echo');
     register_shutdown_function(static function () {
         shell_exec('stty sane');
     });
 }
 
-// ---------- ESC KEY HANDLING ----------
+// ---------- ESC KEY HANDLING ------------------
 if (defined('STDIN')) {
     Revolt\EventLoop::onReadable(STDIN, static function () {
         $char = stream_get_contents(STDIN, 1);
@@ -57,8 +55,10 @@ if (defined('STDIN')) {
     });
 }
 
-// ----------Validate MYSQL DB ----------
+// ----------Validate MYSQL DB ------------------
 if ($_ENV['tables_initialized'] !== 'done') {
+    $fluent = $container->get(\Yuha\Trna\Repository\Fluent::class);
+    $structure = $container->get(\Yuha\Trna\Repository\Structure::class);
     foreach (Yuha\Trna\Core\Enums\Table::cases() as $table) {
         $fluent->executeFile($table);
         $structure->validate($table);
@@ -66,11 +66,11 @@ if ($_ENV['tables_initialized'] !== 'done') {
     Yuha\Trna\Service\Aseco::updateEnvFile('tables_initialized', 'done');
 }
 
-// ---------- RUN CONTROLLER ----------
+// ---------- RUN CONTROLLER --------------------
 Revolt\EventLoop::queue(static function () use ($controller) {
     echo "TRNA controller started...\n";
     $controller->run();
 });
 
-// ---------- START LOOP ----------
+// ---------- START LOOP ------------------------
 Revolt\EventLoop::run();

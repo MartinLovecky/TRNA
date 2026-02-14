@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Infrastructure\Tmx;
 
+use Yuha\Trna\Core\DTO\TmxRecord;
 use Yuha\Trna\Core\Enums\{Field, Misc, Rec};
 use Yuha\Trna\Service\{Aseco, HttpClient};
 

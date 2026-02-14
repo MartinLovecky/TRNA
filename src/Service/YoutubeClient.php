@@ -7,7 +7,7 @@ namespace Yuha\Trna\Service;
 use Google\Client as GoogleClient;
 use Google\Service\YouTube;
 use Google\Service\YouTube\SearchResult;
-use Yuha\Trna\Service\Internal\{YoutubeSearchResults, YoutubeVideoResult};
+use Yuha\Trna\Core\DTO\{YoutubeSearchResults, YoutubeVideoResult};
 
 class YoutubeClient
 {

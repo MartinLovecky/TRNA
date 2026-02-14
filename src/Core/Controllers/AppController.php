@@ -148,10 +148,7 @@ class AppController
         if ($cb->get('Login') === '') {
             return;
         }
-        $banned = TmContainer::fromJsonFile(Server::$jsonDir . 'Banned');
-        //NOTE: We could check if IPAddress is inside bannedIP
-        // but Login should be enough
-        if ($banned->has($cb->get('Login'))) {
+        if (TmContainer::fromJsonFile('Banned')->has($cb->get('Login'))) {
             $msg = <<<MSG
                 {$this->c->green}Could not connect: \n
                 Your IP was banned from this server!

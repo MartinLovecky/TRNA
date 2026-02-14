@@ -15,10 +15,10 @@ class Registry
     /** window => total pages */
     private array $totalPages = [];
 
-    /** playerId => [window => current page] */
+    /** login => [window => current page] */
     private array $currentPages = [];
 
-    /** playerId => last interaction timestamp */
+    /** login => last interaction timestamp */
     private array $lastTouch = [];
 
     /**
@@ -32,59 +32,59 @@ class Registry
         $this->totalPages[$window->name] = max(1, $pages);
     }
 
-    public function setPage(string $playerId, Window $window, int $page): void
+    public function setPage(string $login, Window $window, int $page): void
     {
-        $this->touch($playerId);
+        $this->touch($login);
 
         $page = max(1, min($page, $this->total($window)));
-        $this->currentPages[$playerId][$window->value] = $page;
+        $this->currentPages[$login][$window->value] = $page;
     }
 
-    public function current(?string $playerId, Window $window): int
+    public function current(?string $login, Window $window): int
     {
-        if (!$playerId) {
+        if (!$login) {
             return 1; // non-player view always page 1
         }
 
-        $this->touch($playerId);
+        $this->touch($login);
 
-        return $this->currentPages[$playerId][$window->value] ?? 1;
+        return $this->currentPages[$login][$window->value] ?? 1;
     }
 
     /**
      * Get action id for previous page
      *
      */
-    public function prev(string $playerId, Window $window): void
+    public function prev(string $login, Window $window): void
     {
-        $this->setPage($playerId, $window, $this->current($playerId, $window) - 1);
+        $this->setPage($login, $window, $this->current($login, $window) - 1);
     }
 
     /**
      * set id for next page
      *
      */
-    public function next(string $playerId, Window $window): void
+    public function next(string $login, Window $window): void
     {
-        $this->setPage($playerId, $window, $this->current($playerId, $window) + 1);
+        $this->setPage($login, $window, $this->current($login, $window) + 1);
     }
 
     /**
      * set action id for frist page
      *
      */
-    public function first(string $playerId, Window $window): void
+    public function first(string $login, Window $window): void
     {
-        $this->setPage($playerId, $window, 1);
+        $this->setPage($login, $window, 1);
     }
 
     /**
      * set action id for last page
      *
      */
-    public function last(string $playerId, Window $window): void
+    public function last(string $login, Window $window): void
     {
-        $this->setPage($playerId, $window, $this->total($window));
+        $this->setPage($login, $window, $this->total($window));
     }
 
     public function total(Window $window): int
@@ -96,15 +96,15 @@ class Registry
     {
         $now = time();
 
-        foreach ($this->lastTouch as $playerId => $last) {
+        foreach ($this->lastTouch as $login => $last) {
             if ($now - $last > $ttl) {
-                unset($this->lastTouch[$playerId], $this->currentPages[$playerId]);
+                unset($this->lastTouch[$login], $this->currentPages[$login]);
             }
         }
     }
 
-    private function touch(string $playerId): void
+    private function touch(string $login): void
     {
-        $this->lastTouch[$playerId] = time();
+        $this->lastTouch[$login] = time();
     }
 }

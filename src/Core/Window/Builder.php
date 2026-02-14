@@ -15,7 +15,8 @@ class Builder
         private readonly Client $client,
         private readonly Codec $codec,
         private readonly Registry $registry
-    ) {}
+    ) {
+    }
 
     public function display(
         Window $window,
@@ -31,13 +32,13 @@ class Builder
                 login: $login,
                 template: $window->template(),
                 context: $context,
-                hide: $close
+                hide: $close,
             );
         } else {
             $this->client->sendRenderToAll(
                 template: $window->template(),
                 context: $context,
-                hide: $close
+                hide: $close,
             );
         }
     }
@@ -46,12 +47,12 @@ class Builder
         Window $window,
         string $header,
         array $rows,
-        ?string $playerId,
+        ?string $login,
     ): array {
         $totalPages = max(1, (int) ceil(\count($rows) / self::ROWS_PER_PAGE));
         $this->registry->register($window, $totalPages);
 
-        $currentPage = $this->registry->current($playerId, $window);
+        $currentPage = $this->registry->current($login, $window);
 
         $pageRows = \array_slice(
             $rows,

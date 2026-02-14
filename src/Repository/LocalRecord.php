@@ -14,41 +14,37 @@ class LocalRecord
 {
     use LoggerAware;
 
-    public function __construct(private RepoController $repoController)
+    public function __construct(private readonly RepoController $repoController)
     {
         $this->initLog('LocalRecord');
     }
 
-    public function getRecord(string $uid): ?TmContainer
+    public function getDBAll(): array
     {
-        $res = $this->repoController->fetch(
-            Table::RECORDS,
-            'ChallengeId',
-            $uid,
-            ['Times', 'Checkpoints'],
-        );
+        return $this->repoController->fetch(table: Table::RECORDS, all: true);
+    }
+    // Records
+    public function getDBRecord(string $uid): ?array
+    {
+        $res = $this->repoController->fetch(Table::RECORDS, 'ChallengeId', $uid);
 
         if (isset($res['ok'])) {
             $this->logInfo("{$uid} doesnt exist in table: " . Table::RECORDS->name);
             return null;
         }
 
-        $t = array_key_first($res);
-        $x = Aseco::safeJsonDecode($t);
+        $times = Aseco::safeJsonDecode($res['Times']);
+        $checkpoints = Aseco::safeJsonDecode($res['Checkpoints']);
 
-        if (!$x) {
-            $this->logError("Failed decode json: {$t} from array:", $res);
-            return null;
-        }
+        asort($times, SORT_NUMERIC);
 
-        asort($x);
-        $time = TmContainer::fromArray($x);
-        $time->set('checkpoints', $res[$t]);
-
-        return $time;
+        return [
+            'total' => $times,
+            'cps' => $checkpoints,
+        ];
     }
 
-    public function createRecord(string $uid): void
+    public function createDBRecord(string $uid): void
     {
         $data = [
             'ChallengeId' => $uid,
@@ -67,7 +63,7 @@ class LocalRecord
         }
     }
 
-    public function updateRecord(TmContainer $player, string $uid): void
+    public function updateDBRecord(TmContainer $player, string $uid): void
     {
         $data = [
             'Times' => json_encode([
@@ -89,7 +85,7 @@ class LocalRecord
         }
     }
 
-    public function deleteRecord(string $uid): void
+    public function deleteDBRecord(string $uid): void
     {
         $res = $this->repoController->delete(Table::RECORDS, 'ChallengeId', $uid);
         if (!$res['ok']) {

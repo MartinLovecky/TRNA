@@ -6,10 +6,11 @@ namespace Yuha\Trna\Plugins;
 
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\{PluginController, VoteController};
+use Yuha\Trna\Core\DTO\WindowContext;
 use Yuha\Trna\Core\Enums\{Action};
 use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Core\Window\{Builder, Codec, Context, Data, Registry};
+use Yuha\Trna\Core\Window\{Builder, Codec, Data, Registry};
 use Yuha\Trna\Infrastructure\Gbx\Client;
 
 class ManiaLinks implements DependentPlugin
@@ -40,24 +41,24 @@ class ManiaLinks implements DependentPlugin
         $this->handleAction($player, $context);
     }
 
-    private function handleAction(TmContainer $player, Context $ctx): void
+    private function handleAction(TmContainer $player, WindowContext $ctx): void
     {
-        $playerId = $player->get('Login');
+        $login = $player->get('Login');
         $window = $ctx->window;
         match ($ctx->action) {
-            Action::Next  => $this->registry->next($playerId, $window),
-            Action::Prev  => $this->registry->prev($playerId, $window),
-            Action::First => $this->registry->first($playerId, $window),
-            Action::Last  => $this->registry->last($playerId, $window),
-            Action::Page  => $this->registry->setPage($playerId, $window, $window->value),
-            Action::Open  => $this->openWindow($playerId, $ctx),
+            Action::Next  => $this->registry->next($login, $window),
+            Action::Prev  => $this->registry->prev($login, $window),
+            Action::First => $this->registry->first($login, $window),
+            Action::Last  => $this->registry->last($login, $window),
+            Action::Page  => $this->registry->setPage($login, $window, $window->value),
+            Action::Open  => $this->openWindow($login, $ctx),
             Action::Close => $this->closeWindow($window->value),
-            Action::Yes, Action::No, Action::Cancel, Action::Pass => $this->handleChoice($playerId, $ctx),
+            Action::Yes, Action::No, Action::Cancel, Action::Pass => $this->handleChoice($login, $ctx),
             default => null
         };
 
         if (\in_array($ctx->action, [Action::Next, Action::Prev, Action::First, Action::Last], true)) {
-            $this->builder->display($window, $playerId, $this->data->getData($window));
+            $this->builder->display($window, $login, $this->data->getData($window));
         }
     }
 
@@ -66,16 +67,16 @@ class ManiaLinks implements DependentPlugin
         $this->client->sendXmlToAll("<manialink id='{$id}'></manialink>");
     }
 
-    public function openWindow(string $playerId, Context $ctx)
+    public function openWindow(string $login, WindowContext $ctx)
     {
         $this->builder->display(
             $ctx->window,
-            $playerId,
+            $login,
             $this->data->getData($ctx->window),
         );
     }
 
-    private function handleChoice(string $playerId, Context $ctx)
+    private function handleChoice(string $login, WindowContext $ctx)
     {
     }
 }

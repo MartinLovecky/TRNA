@@ -105,11 +105,29 @@ class TmContainer extends ArrayObject implements ContainerInterface
             $lastKey = (int)$lastKey;
         }
 
-        return match (true) {
-            $parent instanceof self => $parent->offsetExists($lastKey),
-            \is_array($parent) => \array_key_exists($lastKey, $parent),
-            default => false,
-        };
+        return $parent->offsetExists($lastKey);
+    }
+
+    /**
+     * Check if a collection at the given dot-path contains a value.
+     *
+     * - Use sparingly — this is O(n).
+     */
+    public function in(string $path, mixed $needle, bool $strict = true): bool
+    {
+        $target = $this->get($path);
+
+        if (!$target instanceof self) {
+            return false;
+        }
+
+        foreach ($target as $value) {
+            if ($strict ? $value === $needle : $value === $needle) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -298,6 +316,10 @@ class TmContainer extends ArrayObject implements ContainerInterface
      */
     public function offsetSet(mixed $key, mixed $value): void
     {
+        if (\is_array($value)) {
+            $value = self::fromArray($value);
+        }
+
         parent::offsetSet($key, $value);
     }
 

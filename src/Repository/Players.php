@@ -6,7 +6,7 @@ namespace Yuha\Trna\Repository;
 
 use Yuha\Trna\Core\Controllers\RepoController;
 use Yuha\Trna\Core\Enums\Table;
-use Yuha\Trna\Core\{Server, TmContainer};
+use Yuha\Trna\Core\{TmContainer};
 use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Service\Aseco;
@@ -46,6 +46,14 @@ class Players
         }
 
         $this->numPlayers = $this->tmContainer->count();
+        // This won't create duplicates don't worry
+        $this->createPlayerInD($this->tmContainer->get($login));
+        $res = $this->repoController->fetch(Table::PLAYERS_EXTRA, 'playerID', $login);
+        $this->tmContainer->setMultiple([
+            "{$login}.extra.cps" => $res['cps'],
+            "{$login}.extra.dedicps" => $res['dedicps'],
+            "{$login}.extra.donations" => $res['donations'],
+        ]);
     }
 
     public function getByLogin(string $login): ?TmContainer
@@ -82,11 +90,7 @@ class Players
 
     private function isAdmin(string $login): bool
     {
-        $admins = TmContainer::fromJsonFile(Server::$jsonDir . 'Admins')->get('Admins')->getIterator();
-        foreach ($admins as $_ => $value) {
-            return $login === $value;
-        }
-        return false;
+        return TmContainer::fromJsonFile('Admins')->has("Logins.{$login}");
     }
 
     private function createPlayerInD(TmContainer $player): void

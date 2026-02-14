@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Yuha\Trna\Core\Window;
+namespace Yuha\Trna\Core\DTO;
 
 use Yuha\Trna\Core\Enums\{Action, Window};
 
-final class Context
+final class WindowContext
 {
     public function __construct(
         public readonly Window $window,

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yuha\Trna\Infrastructure\Tmx;
+namespace Yuha\Trna\Core\DTO;
 
 final readonly class TmxRecord
 {

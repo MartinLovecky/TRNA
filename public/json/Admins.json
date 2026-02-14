@@ -1,3 +1,5 @@
 {
-    "Admins": ["yuhzel"]
+    "Logins": {
+        "yuhzel": true
+    }
 }

@@ -83,23 +83,22 @@ final class Aseco
     /**
      * Safely decodes a JSON string into an array.
      *
-     * @param  string     $json  The JSON string to decode.
-     * @param  bool       $assoc Whether to return an associative array (default: true).
-     * @return array|null Decoded array on success, or null on failure.
+     * @param ?string $json  The JSON string to decode.
+     * @param bool    $assoc Whether to return an associative array (default: true).
      */
-    public static function safeJsonDecode(string $json, bool $assoc = true): ?array
+    public static function safeJsonDecode(?string $json, bool $assoc = true): array
     {
-        // Reset previous error state
-        json_last_error();
-
-        $decoded = json_decode($json, $assoc);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            self::console('[X8seco] JSON decode error: ' . json_last_error_msg());
-            return null;
+        if ($json === null || $json === '') {
+            return [];
         }
 
-        return $decoded;
+        try {
+            $decoded = json_decode($json, $assoc, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            return [];
+        }
+
+        return \is_array($decoded) ? $decoded : [];
     }
 
     /**

@@ -79,15 +79,16 @@ trait ParserAware
     /**
      * Load JSON from a file and convert to container.
      *
-     * @param  string            $filePath Path to JSON file
+     * @param  string            $file Name of JSON file to load
      * @throws \RuntimeException If file cannot be read or contents are invalid
      */
-    public static function fromJsonFile(string $filePath): static
+    public static function fromJsonFile(string $file): static
     {
-        $json = Aseco::safeFileGetContents($filePath . '.json');
+        $path = Server::$jsonDir . $file;
+        $json = Aseco::safeFileGetContents($path . '.json');
 
         if (!$json) {
-            throw new \RuntimeException("Invalid filePath: {$filePath}");
+            throw new \RuntimeException("Invalid filePath: {$path}");
         }
 
         return self::fromJsonString($json);
@@ -109,7 +110,7 @@ trait ParserAware
         if ($json === false) {
             return false;
         }
-        $path = Server::$jsonDir . $file . 'json';
+        $path = Server::$jsonDir . $file . '.json';
         return file_put_contents($path, $json) !== false;
     }
 
@@ -118,16 +119,16 @@ trait ParserAware
      *
      * Loads the JSON → applies update → writes back.
      *
-     * @param string $filePath Path to JSON file
-     * @param string $path     Dot-path inside the JSON
-     * @param mixed  $value    New value
+     * @param string $file  Name of Json file to update
+     * @param string $path  Dot-path inside the JSON
+     * @param mixed  $value New value
      */
-    public static function updateJsonFile(string $filePath, string $path, mixed $value): bool
+    public static function updateJsonFile(string $file, string $path, mixed $value): bool
     {
-        $container = self::fromJsonFile($filePath);
+        $container = self::fromJsonFile($file);
         $container->set($path, $value);
 
-        return $container->saveToJsonFile($filePath);
+        return $container->saveToJsonFile($file);
     }
 
     /**
