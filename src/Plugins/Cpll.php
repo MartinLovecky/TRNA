@@ -55,9 +55,9 @@ class Cpll implements DependentPlugin
         }
     }
 
-    public function onPlayerFinish(string $login): void
+    public function onPlayerFinish(TmContainer $cb): void
     {
-        $this->resetCP($login);
+        //$this->resetCP($login);
     }
 
     public function onNewChallenge(): void

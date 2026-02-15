@@ -7,8 +7,9 @@ namespace Yuha\Trna\Plugins;
 use Yuha\Trna\Core\{Color, TmContainer};
 use Yuha\Trna\Core\Controllers\RepoController;
 use Yuha\Trna\Core\DTO\PlayerCheckpoint;
-use Yuha\Trna\Core\Enums\{GameMode, Table};
+use Yuha\Trna\Core\Enums\{GameMode, Table, Window};
 use Yuha\Trna\Core\Traits\LoggerAware;
+use Yuha\Trna\Core\Window\Builder;
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
 use Yuha\Trna\Service\Aseco;
@@ -21,6 +22,7 @@ class Checkpoints
     private bool $test = false;
 
     public function __construct(
+        private readonly Builder $builder,
         private readonly Client $client,
         private readonly Color $c,
         private readonly Challenge $challenge,
@@ -38,7 +40,7 @@ class Checkpoints
         $this->cps[$login] = new PlayerCheckpoint(
             bestFin: $gameMode === GameMode::Laps ? 0 : PHP_INT_MAX,
             currFin: $gameMode === GameMode::Laps ? 0 : PHP_INT_MAX,
-            bestCps: $player->get('extra.cps', 0),
+            bestCps: [$player->get('extra.cps')],
             currCps: [],
             dedirec: $player->get('extra.dedicps', 0),
         );
@@ -94,34 +96,70 @@ class Checkpoints
         $time  = $cb->get('time');
         $cpIndex = $cb->get('checkpointIndex');
 
-        if ($gameMode !== GameMode::Laps) {
-            if ($gameMode === GameMode::Race && $cpIndex === 0) {
-                $this->cps[$login]->currCps = [];
+        // NOTE: LAPS NOT SUPPORTED
+
+        if ($gameMode === GameMode::Race && $cpIndex === 0) {
+            $this->cps[$login]->currCps = [];
+        }
+        // check cheater
+        if (
+            $time <= 0 ||
+            $cpIndex !== \count($this->cps[$login]->currCps) ||
+            $cpIndex > 0 &&
+            $time < end($this->cps[$login]->currCps) &&
+            $this->test
+        ) {
+            $this->processCheater($login);
+        }
+        // store current checkpoint
+        $this->cps[$login]->currCps[$cpIndex] = $time;
+        // check if displaying for this player, and for best checkpoints
+        if (
+            $this->cps[$login]->loclrec !== -1 &&
+            isset($checkpoints[$login]->best_cps[$cpIndex])
+        ) {
+            $check = $cpIndex + 1;
+            $dif   = $this->cps[$login]->currCps[$cpIndex] - $this->cps[$login]->bestCps[$cpIndex];
+
+            if ($dif < 0) {
+                $dif  = abs($dif);
+                $sign = "{$this->c->blue}-";
+            } elseif ($dif === 0) {
+                $sign = "{$this->c->blue}";
+            } else {
+                $sign = "{$this->c->red}+";
             }
-            // check cheater
-            if (
-                $time <= 0 ||
-                $cpIndex !== \count($this->cps[$login]->currCps) ||
-                $cpIndex > 0 &&
-                $time < end($this->cps[$login]->currCps) &&
-                $this->test
-            ) {
-                $this->processCheater($login);
+
+            $sec = floor($dif / 1000);
+            $hun = ($dif - ($sec * 1000)) / 10;
+
+            if ($check === \count($this->cps[$login]->bestCps)) {
+                $check = 'F';
             }
-            // store current checkpoint
-            $this->cps[$login]->currCps[$cpIndex] = $time;
-            // check if displaying for this player, and for best checkpoints
-            if (
-                $this->cps[$login]->loclrec !== -1 &&
-                isset($checkpoints[$login]->best_cps[$cpIndex])
-            ) {
-                //TODO
-                $dif = $this->cps[$login]->currCps[$cpIndex] - $this->cps[$login]->bestCps[$cpIndex];
-            }
+
+            // display panel
+            $this->builder->display(
+                Window::Checkpoints,
+                $login,
+                [
+                    'id'   => Window::Checkpoints->value,
+                    'cp'   => $check,
+                    'diff' => $sign . \sprintf('%d.%02d', $sec, $hun),
+                ],
+            );
         }
     }
 
-    public function onPlayerInfoChanged(TmContainer $player)
+    public function onPlayerFinish(TmContainer $cb)
+    {
+        $gameMode = $this->challenge->gameMode();
+
+        if ($gameMode !== GameMode::Race) {
+            return;
+        }
+    }
+
+    public function onPlayerInfoChanged(TmContainer $player): void
     {
         if (
             $this->challenge->gameMode() === GameMode::Stunts

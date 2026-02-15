@@ -62,22 +62,33 @@ class Response
         }
 
         $paramElements = $this->getDirectChildren($paramsElement, 'param');
-        $paramNames = CallbackHelper::getNamedParams($this->methodName);
 
+        // OBJECT CALLBACK DETECTION
+        if (\count($paramElements) === 1) {
+            $valueElement = $this->getFirstDirectChild($paramElements[0], 'value');
+            $decoded = RpcConverter::deserialize($valueElement);
+            if (\is_array($decoded)) {
+                return $this->handleObjectCallback($decoded);
+            }
+        }
+        // POSITIONAL CALLBACK
+        $paramNames = CallbackHelper::getNamedParams($this->methodName);
         foreach ($paramElements as $index => $param) {
             // skip index 3
             if ($index === 3) {
                 continue;
             }
+
             $valueElement = $this->getFirstDirectChild($param, 'value');
+            $decoded = RpcConverter::deserialize($valueElement);
             $path = $paramNames[$index] ?? (string)$index;
-            $c->set($path, RpcConverter::deserialize($valueElement));
+            $c->set($path, $decoded);
 
             // Log to implemt friendly names for parameters
             if (!isset($paramNames[$index])) {
                 $this->logInfo(
                     "Discovered unknown callback parameter for {$this->methodName} at index $index",
-                    ['value' => $valueElement->textContent],
+                    ['value' => $decoded],
                 );
                 $paramNames[$index] = "param$index";
                 CallbackHelper::setMapping($this->methodName, $paramNames);
@@ -205,5 +216,12 @@ class Response
         }
 
         return $children;
+    }
+
+    private function handleObjectCallback(array $payload): TmContainer
+    {
+        $payload['methodName'] = $this->methodName;
+
+        return TmContainer::fromArray($payload);
     }
 }

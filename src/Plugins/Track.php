@@ -55,12 +55,12 @@ class Track implements DependentPlugin
     public function onNewChallenge(): void
     {
         $info = $this->challenge->getCurrentChallengeInfo();
-        $mapName = $info->get('Name');
-        $author = $info->get('Author');
+        $mapName = Aseco::stripColors($info->get('Name'));
+        $author = Aseco::stripColors($info->get('Author'));
         $this->startTime = time();
 
         $msg = <<<MSG
-            {$this->c->white}** {$this->c->green}Current track {$mapName}{$this->c->z->green} by Author: {$author}
+            {$this->c->white}** {$this->c->green}Current track {$this->c->white}{$mapName}{$this->c->z->green} by Author: {$this->c->white}{$author}
         MSG;
 
         $this->client->sendChatMessageToAll($msg);

@@ -16,6 +16,7 @@ enum Window: int
     case Help   = 27;
     case JUKE_BOX = 28;
     case JUKE_LIST = 29;
+    case Checkpoints = 30;
 
     public function template(): string
     {
@@ -28,6 +29,7 @@ enum Window: int
             self::Tmxv   => 'tmxv/video',
             self::JUKE_BOX => 'hud/juke_box',
             self::JUKE_LIST => 'juke/list',
+            self::Checkpoints => 'hud/cps_panel',
             default      => throw new \RuntimeException("No template for panel {$this->name}")
         };
     }

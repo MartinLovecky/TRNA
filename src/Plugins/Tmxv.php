@@ -7,13 +7,13 @@ namespace Yuha\Trna\Plugins;
 use Yuha\Trna\Core\{Color, TmContainer};
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
+use Yuha\Trna\Core\DTO\YoutubeSearchResults;
 use Yuha\Trna\Core\Enums\Window;
 use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Core\Window\{Builder, Data};
 use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
 use Yuha\Trna\Service\{Aseco, YoutubeClient};
-use Yuha\Trna\Service\Internal\YoutubeSearchResults;
 
 class Tmxv implements DependentPlugin
 {

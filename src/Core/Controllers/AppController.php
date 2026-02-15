@@ -139,6 +139,8 @@ class AppController
             'TrackMania.BeginChallenge'    => $this->newChallenge($cb),
             'TrackMania.EndChallenge'      => $this->endChallenge($cb),
             'TrackMania.PlayerManialinkPageAnswer' => $this->onAnswer($cb),
+            'TrackMania.ChallengeListModified'     => $this->pluginController->invokeAllMethods('onListModified', $cb),
+            'TrackMania.VoteUpdated'       => $this->pluginController->invokeAllMethods('onVoteUpdated', $cb),
             default                        => $this->logDebug("Unhadled cb {$cb->get('methodName')}", $cb->toArray()),
         };
     }
@@ -176,7 +178,7 @@ class AppController
         $player = $this->players->getByLogin($login);
 
         if ($player) {
-            $this->handleChatMessage($player, $cb->get('message'));
+            $this->handleChatMessage($player, $cb->get('text'));
             return;
         }
     }
@@ -243,6 +245,7 @@ class AppController
     {
         $date = date('Y/m/d;H:i:s');
         $this->logDebug('onFinish ' . date("Y-m-d H:i:s"), $cb->toArray());
+        $this->pluginController->invokeAllMethods('onPlayerFinish', $cb);
     }
 
     private function gameStatusChanged(TmContainer $cb): void
@@ -280,7 +283,7 @@ class AppController
             return;
         }
 
-        $player->set('encodedAction', $cb->get('maniaLinkId'));
+        $player->set('encodedAction', $cb->get('answer'));
         $this->pluginController->invokeMethod(ManiaLinks::class, 'onAnswer', $player);
     }
 }

@@ -12,7 +12,8 @@ final class PlayerCheckpoint
         public array $bestCps = [],
         public array $currCps = [],
         public int $dedirec = 0,
-        public ?int $loclrec = null
+        public ?int $loclrec = null,
+        public mixed $speccers = null,
     ) {
     }
 }
