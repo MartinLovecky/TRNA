@@ -150,7 +150,7 @@ class Checkpoints
         }
     }
 
-    public function onPlayerFinish(TmContainer $cb)
+    public function onPlayerFinish(TmContainer $player)
     {
         $gameMode = $this->challenge->gameMode();
 

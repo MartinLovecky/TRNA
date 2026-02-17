@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Core\DTO;
 
-final readonly class TmxRecord
+final class TmxRecord
 {
     public function __construct(
         public int $replayid,

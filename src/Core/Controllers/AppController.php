@@ -18,7 +18,9 @@ class AppController
     use LoggerAware;
     private Restart $restarting = Restart::NO;
     private Status $currStatus = Status::NONE;
+    private Status $prevStatus = Status::NONE;
     private int $uptime = 0;
+    private bool $warmUp = false;
 
     public function __construct(
         private Color $c,
@@ -128,13 +130,13 @@ class AppController
     {
         match ($cb->get('methodName')) {
             'TrackMania.PlayerConnect'     => $this->onPlayerConnect($cb),
-            'TrackMania.PlayerDisconnect'  => $this->onPlayerDisconnect($cb),
+            'TrackMania.PlayerDisconnect'  => $this->pluginController->invokeAllMethods('onPlayerDisconnect', $cb->get('Login')),
             'TrackMania.PlayerChat'        => $this->onChat($cb),
-            'TrackMania.PlayerCheckpoint'  => $this->onPlayerCp($cb),
+            'TrackMania.PlayerCheckpoint'  => $this->pluginController->invokeAllMethods('onCheckpoint', $cb),
             'TrackMania.PlayerInfoChanged' => $this->playerInfoChanged($cb),
             'TrackMania.PlayerFinish'      => $this->onFinish($cb),
-            //'TrackMania.BeginRound'       => $this->onBeginRound(),
-            //'TrackMania.EndRound'         => $this->onEndRound(),
+            'TrackMania.BeginRound'        => null, // do nothing
+            'TrackMania.EndRound'          => null, // do nothing
             'TrackMania.StatusChanged'     => $this->gameStatusChanged($cb),
             'TrackMania.BeginChallenge'    => $this->newChallenge($cb),
             'TrackMania.EndChallenge'      => $this->endChallenge($cb),
@@ -150,6 +152,7 @@ class AppController
         if ($cb->get('Login') === '') {
             return;
         }
+
         if (TmContainer::fromJsonFile('Banned')->has($cb->get('Login'))) {
             $msg = <<<MSG
                 {$this->c->green}Could not connect: \n
@@ -158,6 +161,7 @@ class AppController
             $this->client->sendChatMessageToLogin($msg, $cb->get('Login'));
             return;
         }
+
         $this->players->add($cb->get('Login'));
         $player = $this->players->getByLogin($cb->get('Login'));
         $msg = <<<MSG
@@ -168,14 +172,9 @@ class AppController
         $this->pluginController->invokeAllMethods('onPlayerConnect', $player);
     }
 
-    private function onPlayerDisconnect(TmContainer $cb)
-    {
-    }
-
     private function onChat(TmContainer $cb): void
     {
-        $login = $cb->get('Login');
-        $player = $this->players->getByLogin($login);
+        $player = $this->players->getByLogin($cb->get('Login'));
 
         if ($player) {
             $this->handleChatMessage($player, $cb->get('text'));
@@ -215,11 +214,6 @@ class AppController
         $this->pluginController->invokeAllMethods('onChatCommand', $player);
     }
 
-    private function onPlayerCp(TmContainer $cb): void
-    {
-        $this->pluginController->invokeAllMethods('onCheckpoint', $cb);
-    }
-
     private function playerInfoChanged(TmContainer $cb): void
     {
         $info = $cb->get('playerInfo');
@@ -243,14 +237,40 @@ class AppController
 
     private function onFinish(TmContainer $cb): void
     {
-        $date = date('Y/m/d;H:i:s');
-        $this->logDebug('onFinish ' . date("Y-m-d H:i:s"), $cb->toArray());
-        $this->pluginController->invokeAllMethods('onPlayerFinish', $cb);
+        if ($this->currStatus !== Status::RUNNING_PLAY) {
+            return;
+        }
+
+        $player = $this->players->getByLogin($cb->get('Login'));
+
+        if (!$player instanceof TmContainer) {
+            return;
+        }
+
+        $player->setMultiple([
+            'record.time' => $cb->get('time'),
+            'record.new'  => false,
+            'record.date' => date("Y-m-d H:i:s"),
+        ]);
+
+        $this->pluginController->invokeAllMethods('onPlayerFinish', $player);
     }
 
     private function gameStatusChanged(TmContainer $cb): void
     {
-        $this->logDebug('gameStatusChanged ' . date("Y-m-d H:i:s"), $cb->toArray());
+        $cbStatus = Status::tryFrom($cb->get('statusCode'));
+        $this->prevStatus = $this->currStatus;
+        $this->currStatus = $cbStatus;
+
+        if (
+            $this->currStatus === Status::RUNNING_SYNC ||
+            $this->currStatus === Status::FINISH
+        ) {
+            $this->warmUp = $this->client->query('GetWarmUp')->get('result');
+        }
+        $this->warmUp = false;
+        // WHEN FINISH
+        //TODO: Refresh Scoretable lists,
     }
 
     private function newChallenge(TmContainer $cb): void
