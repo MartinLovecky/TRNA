@@ -67,7 +67,7 @@ if ($_ENV['tables_initialized'] !== 'done') {
 }
 
 // ---------- RUN CONTROLLER --------------------
-Revolt\EventLoop::queue(static function () use ($controller) {
+Revolt\EventLoop::queue(static function () use ($controller, $globalStart) {
     echo "TRNA controller started...\n";
     $controller->run();
 });

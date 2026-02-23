@@ -8,13 +8,6 @@
             style="Bgs1" 
             substyle="BgList">
         </quad>
-        <label 
-            posn="-57.9 39 -31" 
-            sizen="7.4 1.3" 
-            halign="center" 
-            valign="center" 
-            text="MAPS">
-        </label>
         {# === ICONS === #}
         <quad 
             posn="-58.2 43.3 -31" 
@@ -25,5 +18,14 @@
             image="{{ asset('mapList') }}"
             imagefocus="{{ asset('mapListHover') }}">
         </quad>
+        <label 
+            posn="-57.9 39 -31" 
+            sizen="6.6 1.3" 
+            halign="center" 
+            valign="center"
+            textsize="0.9" 
+            textcolor="FFF"
+            text="MAPS {{ data.total_maps }}">
+        </label>
     </frame>
 </manialink>

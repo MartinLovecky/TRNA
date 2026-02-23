@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Plugins;
 
+use Revolt\EventLoop;
 use Yuha\Trna\Core\{Color, TmContainer};
 use Yuha\Trna\Core\Controllers\RepoController;
 use Yuha\Trna\Core\DTO\PlayerCheckpoint;
@@ -32,6 +33,16 @@ class Checkpoints
     }
 
     // ---------- Event Handlers  ----------
+
+    public function onEverySecond(): void
+    {
+        // NOTE: this is not EverySecond but I am lazy to add new Event
+        EventLoop::repeat(60, function () {
+            $time = ['time' => date('H:i:s')];
+            $this->builder->display(Window::Clock, null, $time);
+        });
+    }
+
     public function onPlayerConnect(TmContainer $player): void
     {
         $login = $player->get('Login');
@@ -49,7 +60,7 @@ class Checkpoints
     public function onPlayerDisconnect(string $login): void
     {
         $data = [
-            'cps' => $this->cps[$login]->bestFin,
+            'cps' => $this->cps[$login]->bestCps,
             'dedicps' => $this->cps[$login]->dedirec,
         ];
         $this->repo->update(Table::PLAYERS_EXTRA, $data, $login);
@@ -62,13 +73,15 @@ class Checkpoints
         $gameMode = $this->challenge->gameMode();
         // clear all checkpoints
         foreach ($this->cps as $login => $_) {
-            $this->cps[$login]->bestFin = PHP_INT_MAX;
-            $this->cps[$login]->currFin = PHP_INT_MAX;
-            if ($gameMode === GameMode::Laps) {
-                $this->cps[$login]->currFin = 0;
-            }
             $this->cps[$login]->bestCps = [];
             $this->cps[$login]->currCps = [];
+            $this->cps[$login]->bestFin = PHP_INT_MAX;
+
+            if ($gameMode === GameMode::Laps) {
+                $this->cps[$login]->currFin = 0;
+            } else {
+                $this->cps[$login]->currFin = PHP_INT_MAX;
+            }
 
             $lrec = $this->cps[$login]->loclrec - 1;
 
@@ -168,7 +181,19 @@ class Checkpoints
             return;
         }
 
-        //display_cpspanel($login, 0, '$00f -.--');
+        $login = $player->get('Login');
+
+        if (isset($this->cps[$login]) && $this->cps[$login]->loclrec !== -1) {
+            $this->builder->display(
+                Window::Checkpoints,
+                $login,
+                [
+                    'id'   => Window::Checkpoints->value,
+                    'cp'   => 0,
+                    'diff' => '$00f -.--',
+                ],
+            );
+        }
     }
 
     private function processCheater(string $login): void

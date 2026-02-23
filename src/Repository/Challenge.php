@@ -58,6 +58,14 @@ class Challenge
         return $path ? $c->get($path) : $c;
     }
 
+    public function getTotalMaps(): int
+    {
+        return $this->client
+            ->query('GetChallengeList', [100000, 0])
+            ->get('result')
+            ->count();
+    }
+
     public function gameMode(): GameMode
     {
         $value = $this->getCurrentChallengeInfo('Options.GameMode');

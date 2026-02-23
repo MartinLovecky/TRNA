@@ -218,20 +218,29 @@ class AppController
     {
         $info = $cb->get('playerInfo');
         $player = $this->players->getByLogin($info->get('Login'));
+
         if (!$player instanceof TmContainer) {
             return;
         }
-        if ($info->get('LadderRanking') > 0) {
-            $player->set('ladderrank', $info->get('LadderRanking'));
-            $player->set('IsOfficial', true);
-        }
-        $player->set('IsOfficial', false);
-        $player->set('PrevStatus', $player->get('IsSpectator'));
 
+        if ($info->get('LadderRanking') > 0) {
+            $player->setMultiple([
+                'LadderRanking' => $info->get('LadderRanking'),
+                'IsOfficial'    => true,
+            ]);
+        }
+
+        $player->setMultiple([
+            'IsOfficial'  => false,
+            'IsSpectator' => false,
+            'PrevStatus'  => $player->get('IsSpectator'),
+            'SpectatorStatus' => $info->get('SpectatorStatus'),
+        ]);
+        // check spectator status (ignoring temporary changes)
         if ($info->get('SpectatorStatus') % 10 !== 0) {
             $player->set('IsSpectator', true);
         }
-        $player->set('IsSpectator', false);
+
         $this->pluginController->invokeAllMethods('onPlayerInfoChanged', $player);
     }
 

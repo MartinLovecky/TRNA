@@ -41,7 +41,10 @@ class RaspJukebox implements DependentPlugin
         $this->builder->display(
             window: Window::JUKE_BOX,
             login: $player->get('Login'),
-            data: ['list_id' => $this->jukeListID],
+            data: [
+                'list_id' => $this->jukeListID,
+                'total_maps' => $this->challenge->getTotalMaps(),
+            ],
         );
     }
 
