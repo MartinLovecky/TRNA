@@ -183,11 +183,7 @@ class Checkpoints
 
         $login = $player->get('Login');
 
-<<<<<<< HEAD
-        if (isset($this->cps[$login]) && $this->cps[$login]->loclrec != -1) {
-=======
         if (isset($this->cps[$login]) && $this->cps[$login]->loclrec !== -1) {
->>>>>>> 87e2a8dff33ef81da4c7378dadea9793b1791601
             $this->builder->display(
                 Window::Checkpoints,
                 $login,

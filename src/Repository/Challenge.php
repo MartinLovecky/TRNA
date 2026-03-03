@@ -82,7 +82,7 @@ class Challenge
     public function getNextUids(int $amount = 1): string|array
     {
         $index = $this->client->query('GetNextChallengeIndex')->get('result');
-        $uids = $this->listMaps($amount, $index)->map(static fn(TmContainer $c) => $c->get('UId'));
+        $uids = $this->listMaps($amount, $index)->map(static fn (TmContainer $c) => $c->get('UId'));
 
         return $amount === 1 ? $uids[0] : $uids;
     }

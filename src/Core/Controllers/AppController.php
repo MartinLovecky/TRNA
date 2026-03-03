@@ -226,11 +226,7 @@ class AppController
         if ($info->get('LadderRanking') > 0) {
             $player->setMultiple([
                 'LadderRanking' => $info->get('LadderRanking'),
-<<<<<<< HEAD
-                'IsOfficial'    => true
-=======
                 'IsOfficial'    => true,
->>>>>>> 87e2a8dff33ef81da4c7378dadea9793b1791601
             ]);
         }
 
@@ -238,11 +234,7 @@ class AppController
             'IsOfficial'  => false,
             'IsSpectator' => false,
             'PrevStatus'  => $player->get('IsSpectator'),
-<<<<<<< HEAD
-            'SpectatorStatus' => $info->get('SpectatorStatus')
-=======
             'SpectatorStatus' => $info->get('SpectatorStatus'),
->>>>>>> 87e2a8dff33ef81da4c7378dadea9793b1791601
         ]);
         // check spectator status (ignoring temporary changes)
         if ($info->get('SpectatorStatus') % 10 !== 0) {
