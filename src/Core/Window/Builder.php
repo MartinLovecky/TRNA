@@ -18,6 +18,9 @@ class Builder
     ) {
     }
 
+    /**
+     * Displays a window to a player or to everyone when $login is null.
+     */
     public function display(
         Window $window,
         ?string $login,
@@ -43,6 +46,28 @@ class Builder
         }
     }
 
+    /**
+     * Builds a normalized data payload for UI templates.
+     *
+     * All possible template variables are returned intentionally,
+     * even if a specific template does not use them. This avoids
+     * conditional payload construction and keeps templates and
+     * rendering logic simple and consistent.
+     *
+     * Returned array structure:
+     *  - id       : Window identifier
+     *  - header   : Full window title
+     *  - data     : Template data
+     *  - current/total : Page number
+     *  - /first/prev/next/last : Navigation
+     *  - yes/no/cancel/pass/close : Action
+     *
+     * @param Window $window Window definition
+     * @param string $header Additional header text
+     * @param array  $rows   Full dataset to paginate
+     *
+     * @return array<string, mixed> Normalized template payload
+     */
     private function build(
         Window $window,
         string $header,
@@ -51,7 +76,7 @@ class Builder
     ): array {
         $totalPages = max(1, (int) ceil(\count($rows) / self::ROWS_PER_PAGE));
         $this->registry->register($window, $totalPages);
-
+        // non-player view always page 1
         $currentPage = $this->registry->current($login, $window);
 
         $pageRows = \array_slice(

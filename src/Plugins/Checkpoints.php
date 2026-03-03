@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Plugins;
 
+use Revolt\EventLoop;
 use Yuha\Trna\Core\{Color, TmContainer};
 use Yuha\Trna\Core\Controllers\RepoController;
 use Yuha\Trna\Core\DTO\PlayerCheckpoint;
@@ -32,6 +33,16 @@ class Checkpoints
     }
 
     // ---------- Event Handlers  ----------
+
+    public function onEverySecond(): void
+    {
+        // NOTE: this is not EverySecond but I am lazy to add new Event
+        EventLoop::repeat(60, function () {
+            $time = ['time' => date('H:i:s')];
+            $this->builder->display(Window::Clock, null, $time);
+        });
+    }
+
     public function onPlayerConnect(TmContainer $player): void
     {
         $login = $player->get('Login');
@@ -172,7 +183,11 @@ class Checkpoints
 
         $login = $player->get('Login');
 
+<<<<<<< HEAD
         if (isset($this->cps[$login]) && $this->cps[$login]->loclrec != -1) {
+=======
+        if (isset($this->cps[$login]) && $this->cps[$login]->loclrec !== -1) {
+>>>>>>> 87e2a8dff33ef81da4c7378dadea9793b1791601
             $this->builder->display(
                 Window::Checkpoints,
                 $login,
