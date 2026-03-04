@@ -6,10 +6,10 @@ namespace Yuha\Trna\Core\Controllers;
 
 use Yuha\Trna\Core\{Color, TmContainer};
 use Yuha\Trna\Core\Enums\Action;
-use Yuha\Trna\Core\Enums\{GameMode, Window};
+use Yuha\Trna\Core\Enums\{GameMode, RpcMethod, Window};
 use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Core\Window\Codec;
-use Yuha\Trna\Infrastructure\Gbx\Client;
+use Yuha\Trna\Infrastructure\Gbx\GameClient;
 use Yuha\Trna\Repository\{Challenge, Players};
 
 class VoteController
@@ -25,7 +25,7 @@ class VoteController
     public function __construct(
         private readonly Codec $codec,
         private readonly Color $c,
-        private readonly Client $client,
+        private readonly GameClient $client,
         private readonly Challenge $challenge,
         private readonly Players $players
     ) {
@@ -116,7 +116,7 @@ class VoteController
         $yesPercent = $playerCount > 0 ? ($yes / $playerCount) : 0;
 
         if ($yesPercent <= self::REQUIRED_PERCENT) {
-            $this->client->sendChatMessageToAll("Not enough yes votes to skip map");
+            $this->client->chat("Not enough yes votes to skip map");
             //NOTE: this happens after duration so window shoudl be closed but check actual behaviour
             $this->vote = null;
             return;
@@ -202,10 +202,10 @@ class VoteController
             {$this->c->green}Player {$initiator}{$this->c->z->green} skips challenge!
         MSG;
         if ($gameMode === GameMode::Cup) {
-            $this->client->query('NextChallenge', [true]);
+            $this->client->call(RpcMethod::NEXT_CHALLENGE, [true]);
         } else {
-            $this->client->query('NextChallenge');
+            $this->client->call(RpcMethod::NEXT_CHALLENGE);
         }
-        $this->client->sendChatMessageToAll($msg);
+        $this->client->chat($msg);
     }
 }

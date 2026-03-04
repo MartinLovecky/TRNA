@@ -10,7 +10,6 @@ use Yuha\Trna\Core\Enums\{Action, Jukebox, Window};
 use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Core\Window\{Builder, Codec};
-use Yuha\Trna\Infrastructure\Gbx\Client;
 use Yuha\Trna\Repository\Challenge;
 
 class RaspJukebox implements DependentPlugin
@@ -22,7 +21,6 @@ class RaspJukebox implements DependentPlugin
     public function __construct(
         private readonly Builder $builder,
         private readonly Codec $codec,
-        private readonly Client $client,
         private readonly Challenge $challenge
     ) {
         $this->initLog('Plugin-Jukebox');

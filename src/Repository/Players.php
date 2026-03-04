@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Yuha\Trna\Repository;
 
 use Yuha\Trna\Core\Controllers\RepoController;
-use Yuha\Trna\Core\Enums\Table;
-use Yuha\Trna\Core\{TmContainer};
+use Yuha\Trna\Core\Enums\{RpcMethod, Table};
+use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Infrastructure\Gbx\Client;
+use Yuha\Trna\Infrastructure\Gbx\GameClient;
 use Yuha\Trna\Service\Aseco;
 
 class Players
@@ -18,7 +18,7 @@ class Players
     public int $numPlayers = 0;
 
     public function __construct(
-        private Client $client,
+        private GameClient $client,
         private RepoController $repoController,
         private TmContainer $tmContainer
     ) {
@@ -72,7 +72,7 @@ class Players
 
     public function getDetailedPlayerInfo(string $login): TmContainer
     {
-        $c = $this->client->query('GetDetailedPlayerInfo', [$login])->get('result');
+        $c = $this->client->call(RpcMethod::GET_DETAILED_PLAYER_INFO, [$login])->get('result');
         $c->set('Nation', Aseco::mapCountry($c->get('Path')));
 
         return $c;
@@ -80,7 +80,7 @@ class Players
 
     public function getPlayerList(int $limit = 30, int $start = 0, int $type = 0): TmContainer
     {
-        return $this->client->query('GetPlayerList', [$limit, $start, $type])->get('result');
+        return $this->client->call(RpcMethod::GET_PLAYER_LIST, [$limit, $start, $type])->get('result');
     }
 
     private function hasPlayer(string $login): bool

@@ -2,18 +2,21 @@
 
 declare(strict_types=1);
 
+use Dotenv\Dotenv;
+use League\Container\Container;
+use League\Container\ReflectionContainer;
 use Yuha\Trna\Infrastructure\Gbx\RemoteClient;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$container = new \League\Container\Container();
-$container->delegate(new \League\Container\ReflectionContainer(true));
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$container = new Container();
+$container->delegate(new ReflectionContainer(true));
+$dotenv = Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
 Yuha\Trna\Core\Server::setPaths();
 
-$client = $container->get(Yuha\Trna\Infrastructure\Gbx\Client::class);
+$client = $container->get(Yuha\Trna\Infrastructure\Gbx\GbxRpcClient::class);
 
 RemoteClient::init($client, $_ENV['admin_login']);
 

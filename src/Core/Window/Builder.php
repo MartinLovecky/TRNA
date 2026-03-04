@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Yuha\Trna\Core\Window;
 
 use Yuha\Trna\Core\Enums\{Action, Window};
-use Yuha\Trna\Infrastructure\Gbx\Client;
+use Yuha\Trna\Infrastructure\Gbx\GameClient;
 
 class Builder
 {
     private const ROWS_PER_PAGE = 8;
 
     public function __construct(
-        private readonly Client $client,
+        private readonly GameClient $client,
         private readonly Codec $codec,
         private readonly Registry $registry
     ) {
@@ -24,26 +24,18 @@ class Builder
     public function display(
         Window $window,
         ?string $login,
-        array $data,
+        array $rows,
         string $header = 'help',
         bool $close = false
     ): void {
-        $context = $this->build($window, $header, $data, $login);
+        $context = $this->build($window, $header, $rows, $login);
 
-        if (isset($login)) {
-            $this->client->sendRenderToLogin(
-                login: $login,
-                template: $window->template(),
-                context: $context,
-                hide: $close,
-            );
-        } else {
-            $this->client->sendRenderToAll(
-                template: $window->template(),
-                context: $context,
-                hide: $close,
-            );
-        }
+        $this->client->render(
+            template: $window->template(),
+            context: $context,
+            login: $login,
+            hide: $close,
+        );
     }
 
     /**

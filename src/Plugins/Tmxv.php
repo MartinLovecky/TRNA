@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Plugins;
 
+use TmxvHelpProvider;
 use Yuha\Trna\Core\{Color, TmContainer};
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
 use Yuha\Trna\Core\DTO\YoutubeSearchResults;
 use Yuha\Trna\Core\Enums\Window;
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Core\Window\{Builder, Data};
-use Yuha\Trna\Infrastructure\Gbx\Client;
+use Yuha\Trna\Core\Window\{Builder, WindowDataRegistry};
+use Yuha\Trna\Infrastructure\Gbx\GameClient;
 use Yuha\Trna\Repository\Challenge;
 use Yuha\Trna\Service\{Aseco, YoutubeClient};
 
@@ -24,11 +25,11 @@ class Tmxv implements DependentPlugin
 
     public function __construct(
         private readonly Color $c,
-        private readonly Client $client,
-        private readonly Data $data,
+        private readonly GameClient $client,
         private readonly Challenge $challenge,
         private readonly Builder $builder,
-        private readonly YoutubeClient $youtubeClient
+        private readonly YoutubeClient $youtubeClient,
+        private WindowDataRegistry $data
     ) {
         $this->initLog('Plugin-Tmxv');
     }
@@ -109,7 +110,7 @@ class Tmxv implements DependentPlugin
         $msg = <<<MSG
             {$this->c->white}** {$this->c->green}No GPS videos found for this track.
         MSG;
-        $this->client->sendChatMessageToLogin($msg, $login);
+        $this->client->chat($msg, $login);
     }
 
     private function handleVideoArgs(TmContainer $player): void
@@ -155,11 +156,9 @@ class Tmxv implements DependentPlugin
 
     private function help(TmContainer $player): void
     {
-        $this->builder->display(
-            Window::Help,
-            $player->get('Login'),
-            $this->data->getData(Window::Tmxv),
-        );
+        $this->data->register(Window::Tmxv_HELP, TmxvHelpProvider::class);
+        $data = $this->data->get(Window::Tmxv_HELP)->getData();
+        $this->builder->display(Window::Help, $player->get('Login'), $data);
     }
 
     private function mapYoutubeResults(YoutubeSearchResults $res): array

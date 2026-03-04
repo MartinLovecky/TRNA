@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Yuha\Trna\Repository;
 
 use Yuha\Trna\Core\Controllers\RepoController;
-use Yuha\Trna\Core\Enums\{GameMode, Table};
+use Yuha\Trna\Core\Enums\{GameMode, RpcMethod, Table};
 use Yuha\Trna\Core\{Server, TmContainer};
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Infrastructure\Gbx\{Client, GbxFetcher};
+use Yuha\Trna\Infrastructure\Gbx\{GameClient, GbxFetcher};
 use Yuha\Trna\Infrastructure\Tmx\TmxFetcher;
 use Yuha\Trna\Service\Aseco;
 
@@ -17,7 +17,7 @@ class Challenge
     use LoggerAware;
 
     public function __construct(
-        private Client $client,
+        private GameClient $client,
         private GbxFetcher $gbxFetcher,
         private LocalRecord $localRecord,
         private RepoController $repoController,
@@ -49,7 +49,7 @@ class Challenge
      */
     public function getCurrentChallengeInfo(?string $path = null): mixed
     {
-        $c = $this->client->query('GetCurrentChallengeInfo')->get('result');
+        $c = $this->client->call(RpcMethod::GET_CURRENT_CHALLENGE_INFO)->get('result');
 
         $this->formatChallenge($c);
 
@@ -61,7 +61,7 @@ class Challenge
     public function getTotalMaps(): int
     {
         return $this->client
-            ->query('GetChallengeList', [100000, 0])
+            ->call(RpcMethod::GET_CHALLENGE_LIST, [100000, 0])
             ->get('result')
             ->count();
     }
@@ -81,7 +81,7 @@ class Challenge
      */
     public function getNextUids(int $amount = 1): string|array
     {
-        $index = $this->client->query('GetNextChallengeIndex')->get('result');
+        $index = $this->client->call(RpcMethod::GET_NEXT_CHALLENGE_INDEX)->get('result');
         $uids = $this->listMaps($amount, $index)->map(static fn (TmContainer $c) => $c->get('UId'));
 
         return $amount === 1 ? $uids[0] : $uids;
@@ -102,7 +102,7 @@ class Challenge
 
     public function listMaps(int $size = 1, int $index = 1): TmContainer
     {
-        $list = $this->client->query('GetChallengeList', [$size, $index])->get('result');
+        $list = $this->client->call(RpcMethod::GET_CHALLENGE_LIST, [$size, $index])->get('result');
         $list->each(static function (TmContainer $c) {
             if ($c->has('FileName') || $c->has('GoldTime')) {
                 $c->setMultiple([
@@ -128,7 +128,7 @@ class Challenge
 
     private function gameInfo(): TmContainer
     {
-        return $this->client->query('GetCurrentGameInfo')->get('result');
+        return $this->client->call(RpcMethod::GET_CURRENT_GAME_INFO)->get('result');
     }
 
     private function createChallengeInDb(): void

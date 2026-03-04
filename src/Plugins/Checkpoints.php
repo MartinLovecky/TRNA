@@ -8,10 +8,10 @@ use Revolt\EventLoop;
 use Yuha\Trna\Core\{Color, TmContainer};
 use Yuha\Trna\Core\Controllers\RepoController;
 use Yuha\Trna\Core\DTO\PlayerCheckpoint;
-use Yuha\Trna\Core\Enums\{GameMode, Table, Window};
+use Yuha\Trna\Core\Enums\{GameMode, RpcMethod, Table, Window};
 use Yuha\Trna\Core\Traits\LoggerAware;
 use Yuha\Trna\Core\Window\Builder;
-use Yuha\Trna\Infrastructure\Gbx\Client;
+use Yuha\Trna\Infrastructure\Gbx\GameClient;
 use Yuha\Trna\Repository\Challenge;
 use Yuha\Trna\Service\Aseco;
 
@@ -24,7 +24,7 @@ class Checkpoints
 
     public function __construct(
         private readonly Builder $builder,
-        private readonly Client $client,
+        private readonly GameClient $client,
         private readonly Color $c,
         private readonly Challenge $challenge,
         private readonly RepoController $repo,
@@ -203,7 +203,7 @@ class Checkpoints
         $msg = <<<MSG
             {$this->c->white}*** {$this->c->green}Cheater {$login}{$this->c->z->green} banned!
         MSG;
-        $this->client->sendChatMessageToAll($msg);
-        $this->client->query('Ban', [$login]);
+        $this->client->chat($msg);
+        $this->client->call(RpcMethod::BAN, [$login]);
     }
 }

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Yuha\Trna\Plugins;
 
+use TrackProvider;
 use Yuha\Trna\Core\{Color, Server, TmContainer};
 use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
 use Yuha\Trna\Core\Enums\{GameMode, Window};
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Core\Window\{Builder, Data};
-use Yuha\Trna\Infrastructure\Gbx\Client;
+use Yuha\Trna\Core\Window\{Builder, WindowDataRegistry};
+use Yuha\Trna\Infrastructure\Gbx\GameClient;
 use Yuha\Trna\Repository\Challenge;
 use Yuha\Trna\Service\Aseco;
 
@@ -23,10 +24,10 @@ class Track implements DependentPlugin
 
     public function __construct(
         private readonly Color $c,
-        private readonly Client $client,
-        private readonly Data $data,
+        private readonly GameClient $client,
         private readonly Challenge $challenge,
-        private readonly Builder $builder
+        private readonly Builder $builder,
+        private WindowDataRegistry $data
     ) {
         $this->initLog('Plugin-Track');
     }
@@ -63,7 +64,7 @@ class Track implements DependentPlugin
             {$this->c->white}** {$this->c->green}Current track {$this->c->white}{$mapName}{$this->c->z->green} by Author: {$this->c->white}{$author}
         MSG;
 
-        $this->client->sendChatMessageToAll($msg);
+        $this->client->chat($msg);
     }
 
     public function onEndRace(): void
@@ -84,7 +85,7 @@ class Track implements DependentPlugin
             MSG;
 
             Aseco::console($msg);
-            $this->client->sendChatMessageToAll($msg);
+            $this->client->chat($msg);
             return;
         }
 
@@ -93,7 +94,7 @@ class Track implements DependentPlugin
         MSG;
 
         Aseco::console($msg);
-        $this->client->sendChatMessageToAll($msg);
+        $this->client->chat($msg);
     }
 
     // ---------- Chat functions  ----------
@@ -107,7 +108,7 @@ class Track implements DependentPlugin
             {$this->c->white}** {$mapName}{$this->c->z->green} has been played for {$this->c->white}{$this->timePlaying()}
         MSG;
 
-        $this->client->sendChatMessageToLogin($msg, $login);
+        $this->client->chat($msg, $login);
     }
 
     private function showtime(string $login): void
@@ -117,7 +118,7 @@ class Track implements DependentPlugin
             {$this->c->white}** {$this->c->green}Server Time: {$this->c->white}{$time}
         MSG;
 
-        $this->client->sendChatMessageToLogin($msg, $login);
+        $this->client->chat($msg, $login);
     }
 
     private function trackinfo(string $login): void
@@ -132,16 +133,14 @@ class Track implements DependentPlugin
             {$this->c->white}Bronze Time : {$this->c->bronze}{$challenge->get('BronzeTime')}
         MSG;
 
-        $this->client->sendChatMessageToLogin($msg, $login);
+        $this->client->chat($msg, $login);
     }
 
     private function help(TmContainer $player): void
     {
-        $this->builder->display(
-            Window::Help,
-            $player->get('Login'),
-            $this->data->getData(Window::Track),
-        );
+        $this->data->register(Window::Track_HELP, TrackProvider::class);
+        $data = $this->data->get(Window::Track_HELP)->getData();
+        $this->builder->display(Window::Help, $player->get('Login'), $data);
     }
 
     private function formatName(): string

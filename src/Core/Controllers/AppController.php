@@ -6,9 +6,10 @@ namespace Yuha\Trna\Core\Controllers;
 
 use Revolt\EventLoop;
 use Yuha\Trna\Core\{Color, Server, TmContainer};
-use Yuha\Trna\Core\Enums\{Restart, Status};
+use Yuha\Trna\Core\Enums\{Restart, RpcMethod, Status};
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Infrastructure\Gbx\{Client, RemoteClient};
+use Yuha\Trna\Infrastructure\Gbx\GameClient;
+use Yuha\Trna\Infrastructure\Gbx\GbxCallbackQueue;
 use Yuha\Trna\Plugins\ManiaLinks;
 use Yuha\Trna\Repository\{Challenge, Players};
 use Yuha\Trna\Service\Aseco;
@@ -24,7 +25,8 @@ class AppController
 
     public function __construct(
         private Color $c,
-        private Client $client,
+        private GameClient $client,
+        private GbxCallbackQueue $queue,
         private Challenge $challenge,
         private Players $players,
         private PluginController $pluginController,
@@ -41,9 +43,8 @@ class AppController
 
     private function boot(): void
     {
-        $this->client->query('EnableCallbacks', [true]);
+        $this->client->call(RpcMethod::ENABLE_CALLBACKS, [true]);
         $this->waitForRunningPlay();
-        RemoteClient::init($this->client, $_ENV['admin_login']);
     }
 
     private function waitForRunningPlay(): void
@@ -60,7 +61,7 @@ class AppController
                 throw new \RuntimeException("Server never reached RUNNING_PLAY");
             }
 
-            $status = $client->query('GetStatus')->get('result');
+            $status = $client->call(RpcMethod::GET_STATUS)->get('result');
             $this->currStatus = Status::tryFrom($status->get('Code')) ?? Status::NONE;
 
             if ($this->currStatus === Status::RUNNING_PLAY) {
@@ -75,14 +76,14 @@ class AppController
 
     private function syncServer(): void
     {
-        $sysInfo = $this->client->query('GetSystemInfo')->get('result.ServerLogin');
+        $sysInfo = $this->client->call(RpcMethod::GET_SYSTEM_INFO)->get('result.ServerLogin');
 
         Server::setServerInfo(
-            $this->client->query('GetDetailedPlayerInfo', [$sysInfo])->get('result'),
-            $this->client->query('GetVersion')->get('result'),
-            $this->client->query('GetLadderServerLimits')->get('result'),
-            $this->client->query('GetServerPackMask')->get('result'),
-            $this->client->query('GetServerOptions')->get('result'),
+            $this->client->call(RpcMethod::GET_DETAILED_PLAYER_INFO, [$sysInfo])->get('result'),
+            $this->client->call(RpcMethod::GET_VERSION)->get('result'),
+            $this->client->call(RpcMethod::GET_LADDER_SERVER_LIMITS)->get('result'),
+            $this->client->call(RpcMethod::GET_SERVER_PACK_MASK)->get('result'),
+            $this->client->call(RpcMethod::GET_SERVER_OPTIONS)->get('result'),
         );
 
         $this->pluginController->invokeAllMethods('onSync');
@@ -113,14 +114,14 @@ class AppController
         $msg = <<<MSG
             {$this->c->white}*** {$this->c->green}TRNA {$version} running on {$ip}:{$port}
         MSG;
-        $this->client->sendChatMessageToAll($msg);
+        $this->client->chat($msg);
     }
 
     private function startCallbackPump(): void
     {
         EventLoop::repeat(0.05, function () {
-            $this->client->readCallBack();
-            while ($cb = $this->client->popCBResponse()) {
+            $this->queue->poll();
+            while ($cb = $this->queue->pop()) {
                 $this->dispatchCallback($cb);
             }
         });
@@ -158,7 +159,7 @@ class AppController
                 {$this->c->green}Could not connect: \n
                 Your IP was banned from this server!
             MSG;
-            $this->client->sendChatMessageToLogin($msg, $cb->get('Login'));
+            $this->client->chat($msg, $cb->get('Login'));
             return;
         }
 
@@ -168,7 +169,7 @@ class AppController
             {$this->c->green}Welcome {$player->get('NickName')} {$this->c->z->green}to {$this->c->white}
         MSG . Server::$name;
 
-        $this->client->sendChatMessageToLogin($msg, $player->get('Login'));
+        $this->client->chat($msg, $player->get('Login'));
         $this->pluginController->invokeAllMethods('onPlayerConnect', $player);
     }
 
@@ -275,7 +276,7 @@ class AppController
             $this->currStatus === Status::RUNNING_SYNC ||
             $this->currStatus === Status::FINISH
         ) {
-            $this->warmUp = $this->client->query('GetWarmUp')->get('result');
+            $this->warmUp = $this->client->call(RpcMethod::GET_WARM_UP)->get('result');
         }
         $this->warmUp = false;
         // WHEN FINISH

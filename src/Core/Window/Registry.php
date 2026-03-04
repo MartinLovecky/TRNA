@@ -21,6 +21,9 @@ class Registry
     /** login => last interaction timestamp */
     private array $lastTouch = [];
 
+    /** login => window => query context */
+    private array $queryContext = [];
+
     /**
      * Register a window with total pages.
      *
@@ -101,6 +104,16 @@ class Registry
                 unset($this->lastTouch[$login], $this->currentPages[$login]);
             }
         }
+    }
+
+    public function setContext(string $login, Window $window, array $context): void
+    {
+        $this->queryContext[$login][$window->value] = $context;
+    }
+
+    public function getContext(string $login, Window $window): array
+    {
+        return $this->queryContext[$login][$window->value] ?? [];
     }
 
     private function touch(string $login): void

@@ -9,9 +9,9 @@ use Yuha\Trna\Core\TmContainer;
 final class RemoteClient
 {
     private static TmContainer $admin;
-    private static Client $client;
+    private static GbxRpcClient $client;
 
-    public static function init(Client $ac, string $login): void
+    public static function init(GbxRpcClient $ac, string $login): void
     {
         self::$client = $ac;
         self::$admin = TmContainer::fromArray([
@@ -34,7 +34,8 @@ final class RemoteClient
         bool $multi = false
     ): TmContainer {
         if ($multi) {
-            //return self::$client->multicall($params);
+            $x = self::$client->multicall($params);
+            return TmContainer::fromArray($x);
         }
 
         return self::$client->query($method, $params);

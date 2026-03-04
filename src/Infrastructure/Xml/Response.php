@@ -101,9 +101,9 @@ class Response
     /**
      * parse XML-RPC response.
      *
-     * @param  string      $methodName Name of the method being responded to
-     * @param  string      $xml        XML response content
-     * @param  bool        $multicall  set true to procces multiCallRequest
+     * @param  string      $methodName    Name of the method being responded to
+     * @param  string      $xml           XML response content
+     * @param  bool        $multicall     set true to procces multiCallRequest
      * @param  array       $originalCalls Optional: original calls array for mapping
      * @throws \Exception  If the XML is malformed or missing required elements
      * @return TmContainer Parsed container object with the response data
@@ -184,7 +184,7 @@ class Response
         }
 
         $decoded = RpcConverter::deserialize($valueElement);
-        if (!is_array($decoded)) {
+        if (!\is_array($decoded)) {
             throw new \Exception("Invalid multicall response structure.");
         }
 
@@ -195,14 +195,14 @@ class Response
             if ($item instanceof TmContainer && $item->has('faultCode')) {
                 $this->logError(
                     "Multicall fault at index {$index}",
-                    ['fault' => $item]
+                    ['fault' => $item],
                 );
 
                 $results[$method] = $item;
                 continue;
             }
 
-            if (is_array($item) && count($item) === 1) {
+            if (\is_array($item) && \count($item) === 1) {
                 $results[$method] = $item[0];
             } else {
                 $results[$method] = $item;

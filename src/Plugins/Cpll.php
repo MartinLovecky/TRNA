@@ -9,7 +9,7 @@ use Yuha\Trna\Core\Contracts\DependentPlugin;
 use Yuha\Trna\Core\Controllers\PluginController;
 use Yuha\Trna\Core\Enums\Window;
 use Yuha\Trna\Core\Window\{Builder, Data};
-use Yuha\Trna\Infrastructure\Gbx\Client;
+use Yuha\Trna\Infrastructure\Gbx\GameClient;
 use Yuha\Trna\Repository\Challenge;
 use Yuha\Trna\Service\Aseco;
 
@@ -25,7 +25,7 @@ class Cpll implements DependentPlugin
         private readonly Builder $builder,
         private readonly Data $data,
         private readonly Color $c,
-        private readonly Client $client,
+        private readonly GameClient $client,
         private readonly Challenge $challenge,
     ) {
     }
@@ -41,7 +41,7 @@ class Cpll implements DependentPlugin
         $msg = <<<MSG
             {$this->c->white}** {$this->c->z->green} This server is running CPLL, use /cp and /mycp to view current standings
         MSG;
-        $this->client->sendChatMessageToLogin($msg, $player->get('Login'));
+        $this->client->chat($msg, $player->get('Login'));
         $this->cpll[$player->get('Login')] = [
             'time' => 0,
             'cp'   => 0,
@@ -108,12 +108,12 @@ class Cpll implements DependentPlugin
             $msg = <<<MSG
             {$this->c->green}CPLL set to {$player->get('cmd.mod')} {$player->get('cmd.param')}
             MSG;
-            $this->client->sendChatMessageToLogin($msg, $player->get('Login'));
+            $this->client->chat($msg, $player->get('Login'));
         } else {
             $msg = <<<MSG
                 {$this->c->green}You don't have permission to do this action {$player->get('cmd.mod')}
             MSG;
-            $this->client->sendChatMessageToLogin($msg, $player->get('Login'));
+            $this->client->chat($msg, $player->get('Login'));
         }
     }
 
@@ -123,7 +123,7 @@ class Cpll implements DependentPlugin
             $msg = <<<MSG
                 {$this->c->green}CPLiveList is currently disabled!
             MSG;
-            $this->client->sendChatMessageToLogin($msg, $player->get('Login'));
+            $this->client->chat($msg, $player->get('Login'));
             return;
         }
 
@@ -139,7 +139,7 @@ class Cpll implements DependentPlugin
             $msg = <<<MSG
                 {$this->c->green}You did not reach a checkpoint yet!
             MSG;
-            $this->client->sendChatMessageToLogin($msg, $player->get('Login'));
+            $this->client->chat($msg, $player->get('Login'));
             return;
         }
 

@@ -8,10 +8,12 @@ enum Window: int
 {
     case Admin  = 20;
     case Track  = 21;
+    case Track_HELP = 33;
     case Skip   = 22;
     case Replay = 23;
     case Kick   = 24;
     case Tmxv   = 25;
+    case Tmxv_HELP = 32;
     case Cpll   = 26;
     case Help   = 27;
     case JUKE_BOX = 28;
