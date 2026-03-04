@@ -24,11 +24,7 @@ class Request
      */
     public function createRpcRequest(string $methodName, array $args): string
     {
-        $this->dom = new DOMDocument();
-        $this->dom->encoding = 'UTF-8';
-        $this->dom->formatOutput = true;
-        $this->dom->xmlVersion = '1.0';
-        $this->dom->preserveWhiteSpace = false;
+        $this->initDom();
         $methodCall = $this->dom->createElement('methodCall');
         $this->dom->appendChild($methodCall);
         $methodName = $this->dom->createElement('methodName', htmlspecialchars($methodName, ENT_XML1, 'UTF-8'));
@@ -51,11 +47,7 @@ class Request
      */
     public function createMultiCallRequest(array $calls): string
     {
-        $this->dom = new \DOMDocument();
-        $this->dom->encoding = 'UTF-8';
-        $this->dom->formatOutput = true;
-        $this->dom->xmlVersion = '1.0';
-        $this->dom->preserveWhiteSpace = false;
+        $this->initDom();
 
         // Root <methodCall>
         $methodCall = $this->dom->createElement('methodCall');
@@ -74,27 +66,30 @@ class Request
         $valueElement = $this->dom->createElement('value');
         $arrayElement = $this->dom->createElement('array');
         $dataElement = $this->dom->createElement('data');
-        $dataElement->appendChild($this->dom->createTextNode(''));
+        //$dataElement->appendChild($this->dom->createTextNode(''));
+
         foreach ($calls as $call) {
             // Each call is a <struct>
             $callStruct = $this->dom->createElement('struct');
 
             // --- methodName member ---
             $memberMethod = $this->dom->createElement('member');
-            $nameMethod = $this->dom->createElement('name', 'methodName');
+            $memberMethod->appendChild($this->dom->createElement('name', 'methodName'));
+
             $valueMethod = $this->dom->createElement('value');
-            $valueMethod->appendChild($this->dom->createElement('string', $call['methodName']));
-            $memberMethod->appendChild($nameMethod);
+            $valueMethod->appendChild(RpcConverter::serialize($call['methodName'], $this->dom));
+
             $memberMethod->appendChild($valueMethod);
             $callStruct->appendChild($memberMethod);
 
             // --- params member ---
             $memberParams = $this->dom->createElement('member');
-            $nameParams = $this->dom->createElement('name', 'params');
+            $memberParams->appendChild($this->dom->createElement('name', 'params'));
+
             $paramsValue = $this->dom->createElement('value');
             $paramsArray = $this->dom->createElement('array');
-            $paramsData = $this->dom->createElement('data');
-            $paramsData->appendChild($this->dom->createTextNode(''));
+            $paramsData  = $this->dom->createElement('data');
+
             foreach ($call['params'] as $arg) {
                 $val = $this->dom->createElement('value');
                 $val->appendChild(RpcConverter::serialize($arg, $this->dom));
@@ -103,7 +98,6 @@ class Request
 
             $paramsArray->appendChild($paramsData);
             $paramsValue->appendChild($paramsArray);
-            $memberParams->appendChild($nameParams);
             $memberParams->appendChild($paramsValue);
             $callStruct->appendChild($memberParams);
 
@@ -135,5 +129,12 @@ class Request
         $valueElement->appendChild($typeElement);
         $param->appendChild($valueElement);
         $params->appendChild($param);
+    }
+
+    private function initDom(): void
+    {
+        $this->dom = new DOMDocument('1.0', 'UTF-8');
+        $this->dom->formatOutput = true;
+        $this->dom->preserveWhiteSpace = false;
     }
 }

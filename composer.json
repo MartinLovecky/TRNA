@@ -27,7 +27,8 @@
     },
     "scripts": {
         "pre-autoload-dump": "Google\\Task\\Composer::cleanup",
-        "fix": "php php-cs-fixer-v3.phar fix --config=.php-cs-fixer.php"
+        "fix": "php php-cs-fixer-v3.phar fix --config=.php-cs-fixer.php",
+        "fix:dry": "php php-cs-fixer-v3.phar fix --dry-run --diff --config=.php-cs-fixer.php"
     },
     "extra": {
         "google/apiclient-services": [

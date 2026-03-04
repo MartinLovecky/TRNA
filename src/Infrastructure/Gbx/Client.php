@@ -59,11 +59,16 @@ class Client
      *
      * $calls = [
      *   ['methodName' => 'Authenticate', 'params' => ['user', 'pass']],
-     *   ['methodName' => 'GetStatus', 'params' => []],
+     *   ['methodName' => 'GetStatus',    'params' => []],
      * ]
      */
-    public function multicall(array $calls)
+    public function multicall(array $calls): array
     {
+        if (empty($calls)) {
+            return [];
+        }
+
+        $this->calls = $calls;
         $xml = $this->request->createMultiCallRequest($calls);
         $this->reqHandle++;
         $handle = $this->reqHandle;
@@ -71,6 +76,25 @@ class Client
         $bytes = pack('VVA*', \strlen($xml), $handle, $xml);
 
         $this->socket->write($bytes);
+
+        $tmResponse = $this->result('system.multicall');
+        $responses = [];
+        $results = $tmResponse->get('result', []);
+
+        foreach ($results as $index => $resp) {
+            $methodName = $calls[$index]['methodName'];
+            $responses[$methodName] = $resp;
+
+            // Log faults
+            if ($resp instanceof TmContainer && $resp->has('faultCode')) {
+                $this->logError(
+                    "Multicall fault on {$methodName}",
+                    ['fault' => $resp]
+                );
+            }
+        }
+
+        return $responses;
     }
 
     public function readCallBack(float $timeout = 2.0): bool
@@ -120,7 +144,24 @@ class Client
             }
 
             if (($recvHandle & 0x80000000) === 0) {
-                $this->cb_message[] = $this->response->processCallback($contents);
+                $tmResponse = $this->response->processCallback($contents);
+                // If multicall, expand each method individually
+                if ($tmResponse->has('result') && is_array($tmResponse->get('result'))) {
+                    $resultArray = $tmResponse->get('result');
+                    foreach ($resultArray as $index => $resp) {
+                        $methodName = $this->calls[$index]['methodName'] ?? (string)$index;
+                        $this->cb_message[$methodName] = $resp;
+
+                        if ($resp instanceof TmContainer && $resp->has('faultCode')) {
+                            $this->logError(
+                                "Callback multicall fault on {$methodName}",
+                                ['fault' => $resp]
+                            );
+                        }
+                    }
+                } else {  // Regular single callback
+                    $this->cb_message[] = $tmResponse;
+                }
             }
 
             $read = [$this->socket->socket];
@@ -189,7 +230,14 @@ class Client
                 }
             } while ($recvHandle !== $this->reqHandle);
 
-            return $this->response->processResponse($method, $contents);
+            $isMulticall = count($this->calls) > 1;
+
+            return $this->response->processResponse(
+                $method,
+                $contents,
+                $isMulticall,
+                $this->calls
+            );
         }
 
         return TmContainer::fromArray();

@@ -8,7 +8,7 @@ use DOMDocument;
 use DOMElement;
 use Yuha\Trna\Core\TmContainer;
 use Yuha\Trna\Core\Traits\LoggerAware;
-use Yuha\Trna\Service\Internal\{Arr, CallbackHelper};
+use Yuha\Trna\Service\Internal\CallbackHelper;
 
 /**
  * This class handles parsing of XML-RPC responses.
@@ -104,11 +104,16 @@ class Response
      * @param  string      $methodName Name of the method being responded to
      * @param  string      $xml        XML response content
      * @param  bool        $multicall  set true to procces multiCallRequest
+     * @param  array       $originalCalls Optional: original calls array for mapping
      * @throws \Exception  If the XML is malformed or missing required elements
      * @return TmContainer Parsed container object with the response data
      */
-    public function processResponse(string $methodName, string $xml, bool $multicall = false): TmContainer
-    {
+    public function processResponse(
+        string $methodName,
+        string $xml,
+        bool $multicall = false,
+        array $originalCalls = []
+    ): TmContainer {
         $this->methodName = $methodName;
 
         if (!$this->dom->loadXML($xml, LIBXML_NOCDATA | LIBXML_NOWARNING)) {
@@ -129,9 +134,12 @@ class Response
         }
 
         $paramsElement = $this->getFirstDirectChild($root, 'params');
+        if (!$paramsElement) {
+            throw new \Exception("Missing <params> element in response {$this->methodName}.");
+        }
 
         return $multicall
-            ? $this->processMultiCall($paramsElement)
+            ? $this->processMultiCall($paramsElement, $originalCalls)
             : $this->processParams($paramsElement);
     }
 
@@ -143,10 +151,6 @@ class Response
      */
     private function processParams(DOMElement $params): TmContainer
     {
-        if (!$params) {
-            throw new \Exception("Missing <params> element in response {$this->methodName}.");
-        }
-
         $paramElements = $this->getDirectChildren($params, 'param');
 
         $x = ['methodName' => $this->methodName];
@@ -155,7 +159,6 @@ class Response
         foreach ($paramElements as $_ => $param) {
             $valueElement = $this->getFirstDirectChild($param, 'value');
             $proccessedValue = RpcConverter::deserialize($valueElement);
-
             $x['result'] = $proccessedValue;
         }
 
@@ -168,17 +171,48 @@ class Response
      * @param  DOMElement  $params The <params> element containing multiple responses
      * @return TmContainer TmContainer with responses keyed by index
      */
-    private function processMultiCall(DOMElement $params): TmContainer
+    private function processMultiCall(DOMElement $params, array $originalCalls): TmContainer
     {
-        $paramElements = $this->getDirectChildren($params, 'param');
-        $x = [];
-        foreach ($paramElements as $_ => $param) {
-            $valueElement = $this->getFirstDirectChild($param, 'value');
-            $x['result'] = RpcConverter::deserialize($valueElement);
+        $param = $this->getFirstDirectChild($params, 'param');
+        if (!$param) {
+            throw new \Exception("Missing <param> in multicall response.");
         }
-        $x['methodName'] = $this->methodName;
 
-        return TmContainer::fromArray(Arr::flatten($x));
+        $valueElement = $this->getFirstDirectChild($param, 'value');
+        if (!$valueElement) {
+            throw new \Exception("Missing <value> in multicall response.");
+        }
+
+        $decoded = RpcConverter::deserialize($valueElement);
+        if (!is_array($decoded)) {
+            throw new \Exception("Invalid multicall response structure.");
+        }
+
+        $results = [];
+
+        foreach ($decoded as $index => $item) {
+            $method = $originalCalls[$index]['methodName'] ?? "call_$index";
+            if ($item instanceof TmContainer && $item->has('faultCode')) {
+                $this->logError(
+                    "Multicall fault at index {$index}",
+                    ['fault' => $item]
+                );
+
+                $results[$method] = $item;
+                continue;
+            }
+
+            if (is_array($item) && count($item) === 1) {
+                $results[$method] = $item[0];
+            } else {
+                $results[$method] = $item;
+            }
+        }
+
+        return TmContainer::fromArray([
+            'methodName' => 'system.multicall',
+            'result' => $results,
+        ]);
     }
 
     /**
